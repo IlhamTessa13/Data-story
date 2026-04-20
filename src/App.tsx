@@ -1,10 +1,19 @@
+// src/App.tsx
+import { useRef } from "react";
+import { MapProvider } from "./context/Mapcontext";
+import HeroSection from "./components/HeroSection";
+import ScrollySection from "./components/ScrollySection";
+import { storyConfig } from "./data/storyData";
+
 function App() {
+  const mainRef = useRef<HTMLDivElement>(null);
   return (
-    <main className="bg-white text-gray-900">
-      <h1 className="text-4xl font-bold p-8">
-        Data Story — Kemiskinan Indonesia
-      </h1>
-    </main>
+    <MapProvider>
+      <div ref={mainRef} style={{ background: "#000", color: "white" }}>
+        <HeroSection config={storyConfig} />
+        <ScrollySection />
+      </div>
+    </MapProvider>
   );
 }
 
