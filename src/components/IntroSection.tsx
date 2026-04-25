@@ -254,7 +254,7 @@ export default function IntroSection() {
           <div
             style={{
               ...reveal(0.18),
-              background: "rgba(255, 248, 215, 0.95)",
+              background: "rgba(255, 248, 215, 0.75)",
               border: "1px solid rgba(219,188,100,0.4)",
               borderRadius: 18,
               padding: "clamp(1.4rem, 3vw, 2.2rem)",
