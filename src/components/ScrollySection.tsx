@@ -3,29 +3,49 @@ import mapboxgl from "mapbox-gl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMap } from "../context/Mapcontext";
 
+// Centroid tiap kabupaten (lng, lat)
 const CENTROIDS: Record<string, [number, number]> = {
-  Kupang: [123.8631, -9.9148],
-  "Manggarai Barat": [120.0039, -8.6041],
-  Nagekeo: [121.2715, -8.6902],
-  "Kota Kupang": [123.6096, -10.2059],
-  Malaka: [124.8886, -9.5264],
-  "Sumba Barat": [119.3833, -9.6375],
-  Lembata: [123.539, -8.3872],
-  "Rote Ndao": [123.1294, -10.7252],
-  Belu: [124.9687, -9.1555],
-  Alor: [124.5803, -8.3027],
-  "Timor Tengah Utara": [124.5718, -9.3764],
-  Sikka: [122.3096, -8.6147],
-  "Timor Tengah Selatan": [124.3962, -9.8292],
-  Manggarai: [120.4029, -8.5673],
-  "Sumba Barat Daya": [119.1792, -9.5341],
-  "Manggarai Timur": [120.6897, -8.5739],
-  Ngada: [121.0007, -8.6641],
-  "Sabu Raijua": [121.8684, -10.5288],
-  Ende: [121.7338, -8.6732],
-  "Sumba Timur": [120.2544, -9.8767],
-  "Sumba Tengah": [119.6683, -9.5444],
-  "Flores Timur": [122.9456, -8.3619],
+  MAMUJU: [119.1009, -2.6811],
+  "POLEWALI MANDAR": [119.3527, -3.4138],
+  MAJENE: [118.9688, -3.5402],
+  "PASANGKAYU": [119.4767, -1.8609],
+  MAMASA: [119.3628, -3.0006],
+  "MAMUJU TENGAH": [119.6082, -2.3941],
+};
+
+// ── Clustering hierarkikal ─────────────────────────────────────
+// Kluster 1 (Hijau  – Akses Baik)   : Mamuju, Polewali Mandar, Majene
+// Kluster 2 (Kuning – Akses Sedang) : Mamuju Utara, Mamasa
+// Kluster 3 (Merah  – Akses Rendah) : Mamuju Tengah
+export const CLUSTER_MEMBERS: Record<1 | 2 | 3, string[]> = {
+  1: ["MAMUJU", "POLEWALI MANDAR"],
+  2: ["MAMUJU TENGAH", "MAJENE"],
+  3: ["PASANGKAYU", "MAMASA"],
+};
+
+// Warna tiap kluster (isi & border)
+const CLUSTER_COLORS: Record<
+  1 | 2 | 3,
+  { fill: string; border: string; text: string; bg: string }
+> = {
+  1: {
+    fill: "#22c55e",
+    border: "#15803d",
+    text: "#15803d",
+    bg: "rgba(34,197,94,0.12)",
+  },
+  2: {
+    fill: "#eab308",
+    border: "#a16207",
+    text: "#a16207",
+    bg: "rgba(234,179,8,0.12)",
+  },
+  3: {
+    fill: "#ef4444",
+    border: "#991b1b",
+    text: "#991b1b",
+    bg: "rgba(239,68,68,0.12)",
+  },
 };
 
 interface StepData {
@@ -41,51 +61,66 @@ interface StepData {
     bearing: number;
     pitch: number;
   };
+  // step clustering tidak punya highest/lowest popup biasa
+  isClustering?: boolean;
 }
 
 const STEPS: StepData[] = [
   {
-    id: "protein",
-    variableLabel: "Konsumsi Protein",
-    unit: "g/kapita/hari",
-    highest: { name: "Manggarai", value: 64.1 },
-    lowest: { name: "Rote Ndao", value: 44.73 },
-    narrative:
-      "Konsumsi protein per kapita di NTT sangat bervariasi. Manggarai mencatat tertinggi (64,1 g/hari) sementara Rote Ndao terendah (44,73 g/hari). Rendahnya konsumsi protein berkorelasi kuat dengan tingginya angka stunting.",
-    flyTo: { center: [121.5, -9.8], zoom: 6.8, bearing: -5, pitch: 38 },
-  },
-  {
-    id: "pengeluaran",
-    variableLabel: "Pengeluaran Makanan",
-    unit: "Rp/kapita/bulan",
-    highest: { name: "Ngada", value: 645882 },
-    lowest: { name: "Alor", value: 450209 },
-    narrative:
-      "Pengeluaran untuk makanan mencerminkan daya beli masyarakat. Ngada memimpin dengan Rp645.882/bulan, sedangkan Alor hanya Rp450.209/bulan — selisih hampir Rp200 ribu yang berdampak signifikan pada kualitas gizi.",
-    flyTo: { center: [122.5, -8.9], zoom: 7.0, bearing: 15, pitch: 45 },
-  },
-  {
-    id: "stunting",
-    variableLabel: "Persentase Stunting",
+    id: "bpjs",
+    variableLabel: "Cakupan BPJS",
     unit: "%",
-    highest: { name: "Sumba Barat Daya", value: 39.2 },
-    lowest: { name: "Lembata", value: 7.9 },
+    highest: { name: "MAMUJU", value: 92.66 },
+    lowest: { name: "MAMUJU TENGAH", value: 75.43 },
     narrative:
-      "Sumba Barat Daya mencatat angka stunting tertinggi di NTT — 39,2%, hampir 5× lipat dibanding Lembata yang terendah (7,9%). Kesenjangan ini menunjukkan perlunya intervensi yang ditargetkan per wilayah.",
-    flyTo: { center: [121.5, -9.0], zoom: 6.9, bearing: 5, pitch: 42 },
+      "Cakupan BPJS di Sulawesi Barat sangat bervariasi antar kabupaten. Mamuju mencatat tertinggi (92,66%) sementara Mamuju Tengah terendah (75,43%). Kesenjangan 17,23 poin ini mencerminkan ketimpangan akses layanan kesehatan yang perlu segera diatasi.",
+    flyTo: { center: [119.3, -2.5], zoom: 8.2, bearing: -5, pitch: 38 },
+  },
+  {
+    id: "tenaga-medis",
+    variableLabel: "Tenaga Medis",
+    unit: "orang",
+    highest: { name: "POLEWALI MANDAR", value: 241 },
+    lowest: { name: "MAMUJU TENGAH", value: 53 },
+    narrative:
+      "Distribusi tenaga medis di Sulbar tidak merata. Polewali Mandar memiliki tenaga medis terbanyak (241 orang), hampir 4,5 kali lipat dibanding Mamuju Tengah yang hanya 53 orang. Ketimpangan ini berdampak langsung pada kualitas layanan kesehatan di daerah terpencil.",
+    flyTo: { center: [119.15, -2.85], zoom: 7.6, bearing: 10, pitch: 35 },
+  },
+  {
+    id: "faskes",
+    variableLabel: "Fasilitas Kesehatan",
+    unit: "unit",
+    highest: { name: "MAMUJU", value: 29 },
+    lowest: { name: "MAMUJU TENGAH", value: 12 },
+    narrative:
+      "Mamuju memiliki fasilitas kesehatan terbanyak (29 unit) sebagai ibu kota provinsi, sementara Mamuju Tengah hanya memiliki 12 unit. Minimnya fasilitas di Mamuju Tengah berkorelasi dengan rendahnya cakupan BPJS dan jumlah tenaga medis di wilayah tersebut.",
+    flyTo: { center: [119.35, -2.6], zoom: 8.0, bearing: 5, pitch: 40 },
+  },
+  // ── Step 4: Clustering Hierarkikal ──────────────────────────
+  {
+    id: "clustering",
+    variableLabel: "Kluster Akses Kesehatan",
+    unit: "",
+    highest: { name: "", value: 0 }, // tidak dipakai
+    lowest: { name: "", value: 0 }, // tidak dipakai
+    narrative:
+      "Analisis kluster hierarkikal membagi 6 kabupaten Sulbar ke dalam 3 kelompok berdasarkan BPJS, tenaga medis, dan fasilitas kesehatan. Kluster Hijau (Baik) mencakup Mamuju, Polewali Mandar, dan Majene. Kluster Kuning (Sedang) meliputi Mamuju Utara dan Mamasa. Kluster Merah (Rendah) hanya diisi Mamuju Tengah — kabupaten ini secara konsisten berada di bawah rata-rata di semua indikator dan membutuhkan intervensi prioritas.",
+    flyTo: { center: [119.2, -2.75], zoom: 7.8, bearing: 0, pitch: 36 },
+    isClustering: true,
   },
 ];
 
 function fmtVal(v: number, unit: string) {
-  if (unit.includes("Rp")) return `Rp${v.toLocaleString("id-ID")}`;
   if (unit === "%") return `${v}%`;
+  if (unit === "orang") return `${v} orang`;
+  if (unit === "unit") return `${v} unit`;
   return `${v} ${unit}`;
 }
 
 function injectPopupStyles() {
-  if (document.getElementById("ntt-popup-styles")) return;
+  if (document.getElementById("sulbar-popup-styles")) return;
   const s = document.createElement("style");
-  s.id = "ntt-popup-styles";
+  s.id = "sulbar-popup-styles";
   s.textContent = `
     .ntt-popup .mapboxgl-popup-content { padding:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important; }
     .ntt-popup .mapboxgl-popup-tip { display:none!important; }
@@ -100,19 +135,25 @@ function buildPopupHTML(type: "highest" | "lowest", step: StepData) {
   const col = isH ? "#ef4444" : "#f59e0b";
   const bg = isH ? "rgba(239,68,68,0.1)" : "rgba(245,158,11,0.1)";
   const lbl = isH ? "▲ TERTINGGI" : "▼ TERENDAH";
-  const isRp = step.unit.includes("Rp");
+  const icon =
+    step.id === "bpjs" ? "🏥" : step.id === "tenaga-medis" ? "👨‍⚕️" : "🏨";
+
   return `
-<div style="width:210px;background:rgba(255,255,255,0.97);border-radius:14px;border:1px solid ${col}33;
+<div style="width:220px;background:rgba(255,255,255,0.97);border-radius:14px;border:1px solid ${col}33;
   box-shadow:0 8px 32px rgba(0,0,0,0.1);overflow:hidden;font-family:system-ui,sans-serif;pointer-events:none;">
   <div style="height:3px;background:linear-gradient(90deg,${col},${col}44);"></div>
   <div style="padding:11px 14px 13px;">
-    <div style="display:inline-flex;align-items:center;background:${bg};border:1px solid ${col}22;
+    <div style="display:inline-flex;align-items:center;gap:5px;background:${bg};border:1px solid ${col}22;
       color:${col};font-size:9px;font-weight:800;letter-spacing:0.12em;padding:2px 8px;
-      border-radius:20px;margin-bottom:7px;text-transform:uppercase;">${lbl}</div>
-    <div style="font-size:10px;font-weight:600;color:rgba(0,0,0,0.4);
-      text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">${step.variableLabel}</div>
-    <div style="font-size:${isRp ? "19px" : "30px"};font-weight:800;color:${col};
-      line-height:1.1;margin-bottom:7px;">${fmtVal(item.value, step.unit)}</div>
+      border-radius:20px;margin-bottom:8px;text-transform:uppercase;">${lbl}</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+      <span style="font-size:16px;">${icon}</span>
+      <div style="font-size:10px;font-weight:600;color:rgba(0,0,0,0.4);
+        text-transform:uppercase;letter-spacing:0.08em;">${step.variableLabel}</div>
+    </div>
+    <div style="font-size:28px;font-weight:800;color:${col};line-height:1.1;margin-bottom:8px;">
+      ${fmtVal(item.value, step.unit)}
+    </div>
     <div style="display:flex;align-items:center;gap:5px;padding-top:7px;border-top:1px solid rgba(0,0,0,0.06);">
       <div style="width:6px;height:6px;border-radius:50%;background:${col};flex-shrink:0;"></div>
       <span style="font-size:12px;font-weight:700;color:#1e293b;">${item.name}</span>
@@ -121,32 +162,63 @@ function buildPopupHTML(type: "highest" | "lowest", step: StepData) {
 </div>`;
 }
 
+// ── Popup kluster (mini badge per kabupaten) ───────────────────
+function buildClusterPopupHTML(kabupaten: string, cluster: 1 | 2 | 3): string {
+  const c = CLUSTER_COLORS[cluster];
+  const labels: Record<1 | 2 | 3, string> = {
+    1: "Kluster 1 · Akses Baik",
+    2: "Kluster 2 · Akses Sedang",
+    3: "Kluster 3 · Akses Rendah",
+  };
+  const icons: Record<1 | 2 | 3, string> = { 1: "✅", 2: "⚠️", 3: "🔴" };
+  return `
+<div style="width:180px;background:rgba(255,255,255,0.97);border-radius:12px;
+  border:1px solid ${c.border}33;box-shadow:0 6px 24px rgba(0,0,0,0.10);
+  overflow:hidden;font-family:system-ui,sans-serif;pointer-events:none;">
+  <div style="height:3px;background:${c.fill};"></div>
+  <div style="padding:9px 12px 11px;">
+    <div style="display:inline-flex;align-items:center;gap:4px;background:${c.bg};
+      border:1px solid ${c.border}22;color:${c.text};font-size:8.5px;font-weight:800;
+      letter-spacing:0.12em;padding:2px 7px;border-radius:20px;margin-bottom:7px;
+      text-transform:uppercase;">${icons[cluster]} ${labels[cluster]}</div>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <div style="width:6px;height:6px;border-radius:50%;background:${c.fill};flex-shrink:0;"></div>
+      <span style="font-size:12px;font-weight:700;color:#1e293b;">${kabupaten}</span>
+    </div>
+  </div>
+</div>`;
+}
+
+// ── NarrativeBox ───────────────────────────────────────────────
 function NarrativeBox({
   step,
   index,
   visible,
+  direction,
 }: {
   step: StepData;
   index: number;
   visible: boolean;
+  direction: number;
 }) {
+  const icons = ["🏥", "👨‍⚕️", "🏨", "🔬"];
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" custom={direction}>
       {visible && (
         <motion.div
           key={step.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          custom={direction}
+          initial={{ opacity: 0, x: direction >= 0 ? 60 : -60 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: direction >= 0 ? -60 : 60 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           style={{
             position: "fixed",
             bottom: 32,
-            left: "50%",
-            transform: "translateX(-50%)",
+            left: 32,
             zIndex: 55,
-            width: "min(560px,88vw)",
-            background: "rgba(255,255,255,0.95)",
+            width: "min(480px,42vw)",
+            background: "rgba(255,255,255,0.96)",
             backdropFilter: "blur(20px)",
             borderRadius: 16,
             padding: "15px 22px 17px",
@@ -162,19 +234,24 @@ function NarrativeBox({
               marginBottom: 9,
             }}
           >
+            <span style={{ fontSize: 16 }}>{icons[index]}</span>
             <div
               style={{
                 fontSize: 10,
                 fontWeight: 800,
                 letterSpacing: "0.14em",
-                color: "#f97316",
+                color: "#0891b2",
                 textTransform: "uppercase",
               }}
             >
               {index + 1} / {STEPS.length}
             </div>
             <div
-              style={{ flex: 1, height: 1, background: "rgba(249,115,22,0.2)" }}
+              style={{
+                flex: 1,
+                height: 1,
+                background: "rgba(8,145,178,0.2)",
+              }}
             />
             <div
               style={{
@@ -198,12 +275,84 @@ function NarrativeBox({
           >
             {step.narrative}
           </p>
+
+          {/* Legend khusus step clustering */}
+          {step.isClustering && (
+            <div
+              style={{
+                marginTop: 12,
+                paddingTop: 10,
+                borderTop: "1px solid rgba(0,0,0,0.07)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              {(
+                [
+                  {
+                    k: 1 as const,
+                    label: "Kluster 1 — Akses Baik",
+                    members: "Mamuju · Polewali Mandar · Majene",
+                  },
+                  {
+                    k: 2 as const,
+                    label: "Kluster 2 — Akses Sedang",
+                    members: "Mamuju Utara · Mamasa",
+                  },
+                  {
+                    k: 3 as const,
+                    label: "Kluster 3 — Akses Rendah",
+                    members: "Mamuju Tengah",
+                  },
+                ] as const
+              ).map(({ k, label, members }) => (
+                <div
+                  key={k}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 8 }}
+                >
+                  <div
+                    style={{
+                      marginTop: 3,
+                      width: 10,
+                      height: 10,
+                      borderRadius: 3,
+                      background: CLUSTER_COLORS[k].fill,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 800,
+                        color: CLUSTER_COLORS[k].text,
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      {label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "rgba(0,0,0,0.45)",
+                        marginTop: 1,
+                      }}
+                    >
+                      {members}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
 
+// ── ProgressDots ───────────────────────────────────────────────
 function ProgressDots({ total, current }: { total: number; current: number }) {
   return (
     <div
@@ -226,7 +375,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
             width: 3,
             borderRadius: 4,
             height: i === current ? 28 : 8,
-            background: i === current ? "#f97316" : "rgba(0,0,0,0.18)",
+            background: i === current ? "#0891b2" : "rgba(0,0,0,0.18)",
             transition: "height 0.3s ease, background 0.3s ease",
           }}
         />
@@ -235,6 +384,7 @@ function ProgressDots({ total, current }: { total: number; current: number }) {
   );
 }
 
+// ── ScrollHint ─────────────────────────────────────────────────
 function ScrollHint({ visible }: { visible: boolean }) {
   return (
     <AnimatePresence>
@@ -269,6 +419,7 @@ function ScrollHint({ visible }: { visible: boolean }) {
   );
 }
 
+// ── Main ───────────────────────────────────────────────────────
 export default function ScrollySection() {
   const {
     mapRef,
@@ -293,15 +444,19 @@ export default function ScrollySection() {
   const pendingZoom = useRef(false);
   const popupHighRef = useRef<mapboxgl.Popup | null>(null);
   const popupLowRef = useRef<mapboxgl.Popup | null>(null);
+  // Popup kluster: satu per kabupaten (max 6)
+  const clusterPopupsRef = useRef<mapboxgl.Popup[]>([]);
   const isResetting = useRef(false);
+  const ticking = useRef(false);
 
   const [activeStep, setActiveStep] = useState(0);
+  const [direction, setDirection] = useState(1);
   const [visible, setVisible] = useState(false);
   const [uiVisible, setUiVisible] = useState(false);
 
   useEffect(() => {
     injectPopupStyles();
-    fetch("/data/ntt-kabupaten.geojson")
+    fetch("/data/sulbar-kabupaten.geojson")
       .then((r) => r.json())
       .then((d) => {
         geojsonRef.current = d;
@@ -315,6 +470,7 @@ export default function ScrollySection() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Helper: hapus semua popup ──────────────────────────────
   const removePopups = useCallback(() => {
     popupHighRef.current?.remove();
     popupHighRef.current = null;
@@ -322,6 +478,17 @@ export default function ScrollySection() {
     popupLowRef.current = null;
   }, []);
 
+  const removeClusterPopups = useCallback(() => {
+    clusterPopupsRef.current.forEach((p) => p.remove());
+    clusterPopupsRef.current = [];
+  }, []);
+
+  const removeAllPopups = useCallback(() => {
+    removePopups();
+    removeClusterPopups();
+  }, [removePopups, removeClusterPopups]);
+
+  // ── Helper: reset semua highlight layer ───────────────────
   const clearHighlight = useCallback(() => {
     if (!mapRef.current) return;
     const empty: GeoJSON.FeatureCollection = {
@@ -334,8 +501,18 @@ export default function ScrollySection() {
     (
       mapRef.current.getSource("highlight-yellow") as mapboxgl.GeoJSONSource
     )?.setData(empty);
+    (mapRef.current.getSource("cluster-1") as mapboxgl.GeoJSONSource)?.setData(
+      empty,
+    );
+    (mapRef.current.getSource("cluster-2") as mapboxgl.GeoJSONSource)?.setData(
+      empty,
+    );
+    (mapRef.current.getSource("cluster-3") as mapboxgl.GeoJSONSource)?.setData(
+      empty,
+    );
   }, [mapRef]);
 
+  // ── Highlight tertinggi / terendah ────────────────────────
   const updateHighlight = useCallback(
     (highName: string, lowName: string) => {
       if (!mapRef.current || !geojsonRef.current) return;
@@ -353,9 +530,58 @@ export default function ScrollySection() {
     [mapRef],
   );
 
+  // ── Highlight clustering ───────────────────────────────────
+  const updateClusterHighlight = useCallback(() => {
+    if (!mapRef.current || !geojsonRef.current) return;
+
+    const getFeatures = (names: string[]) =>
+      geojsonRef.current!.features.filter((f) =>
+        names.includes((f.properties as { name: string }).name),
+      );
+
+    (mapRef.current.getSource("cluster-1") as mapboxgl.GeoJSONSource)?.setData({
+      type: "FeatureCollection",
+      features: getFeatures(CLUSTER_MEMBERS[1]),
+    });
+    (mapRef.current.getSource("cluster-2") as mapboxgl.GeoJSONSource)?.setData({
+      type: "FeatureCollection",
+      features: getFeatures(CLUSTER_MEMBERS[2]),
+    });
+    (mapRef.current.getSource("cluster-3") as mapboxgl.GeoJSONSource)?.setData({
+      type: "FeatureCollection",
+      features: getFeatures(CLUSTER_MEMBERS[3]),
+    });
+  }, [mapRef]);
+
+  // ── Popup clustering: satu popup per kabupaten ────────────
+  const showClusterPopups = useCallback(() => {
+    if (!mapRef.current) return;
+    removeClusterPopups();
+
+    ([1, 2, 3] as Array<1 | 2 | 3>).forEach((k) => {
+      CLUSTER_MEMBERS[k].forEach((kabName) => {
+        const coord = CENTROIDS[kabName];
+        if (!coord) return;
+        const popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          anchor: "bottom",
+          offset: [0, -4],
+          className: "ntt-popup",
+          maxWidth: "none",
+        })
+          .setLngLat(coord)
+          .setHTML(buildClusterPopupHTML(kabName, k))
+          .addTo(mapRef.current!);
+        clusterPopupsRef.current.push(popup);
+      });
+    });
+  }, [mapRef, removeClusterPopups]);
+
+  // ── Popup tertinggi / terendah ────────────────────────────
   const showPopups = useCallback(
     (step: StepData) => {
-      if (!mapRef.current) return;
+      if (!mapRef.current || step.isClustering) return;
       removePopups();
       const hCoord = CENTROIDS[step.highest.name];
       const lCoord = CENTROIDS[step.lowest.name];
@@ -386,6 +612,7 @@ export default function ScrollySection() {
     [mapRef, removePopups],
   );
 
+  // ── Rotasi section ────────────────────────────────────────
   const stopSectionRotation = useCallback(() => {
     if (rotateRef.current) {
       cancelAnimationFrame(rotateRef.current);
@@ -410,12 +637,13 @@ export default function ScrollySection() {
     [mapRef, stopSectionRotation],
   );
 
+  // ── Reset ke globe ────────────────────────────────────────
   const resetToGlobe = useCallback(() => {
     if (!mapRef.current || isResetting.current) return;
     isResetting.current = true;
     stopSectionRotation();
     stopGlobeRotation();
-    removePopups();
+    removeAllPopups();
     clearHighlight();
     setUiVisible(false);
     setGlobeMode(true);
@@ -424,6 +652,7 @@ export default function ScrollySection() {
     isZooming.current = false;
     lastStep.current = -1;
     isFlying.current = false;
+
     mapRef.current.flyTo({
       center: [118.0, -2.0],
       zoom: 1.8,
@@ -440,13 +669,14 @@ export default function ScrollySection() {
     mapRef,
     stopSectionRotation,
     stopGlobeRotation,
-    removePopups,
+    removeAllPopups,
     clearHighlight,
     setGlobeMode,
     currentBearing,
     startGlobeRotation,
   ]);
 
+  // ── Zoom in awal ──────────────────────────────────────────
   const triggerZoomIn = useCallback(
     (stepIdx: number) => {
       if (!mapRef.current || isZooming.current || hasZoomedIn.current) return;
@@ -455,7 +685,8 @@ export default function ScrollySection() {
       stopGlobeRotation();
       stopSectionRotation();
       clearHighlight();
-      removePopups();
+      removeAllPopups();
+
       const step = STEPS[stepIdx];
       mapRef.current.flyTo({
         center: step.flyTo.center,
@@ -472,8 +703,10 @@ export default function ScrollySection() {
         lastStep.current = stepIdx;
         setGlobeMode(false);
         setTimeout(() => {
-          updateHighlight(step.highest.name, step.lowest.name);
-          showPopups(step);
+          if (!step.isClustering) {
+            updateHighlight(step.highest.name, step.lowest.name);
+            showPopups(step);
+          }
           setUiVisible(true);
           startSectionRotation(step.flyTo.bearing);
         }, 300);
@@ -484,7 +717,7 @@ export default function ScrollySection() {
       stopGlobeRotation,
       stopSectionRotation,
       clearHighlight,
-      removePopups,
+      removeAllPopups,
       setGlobeMode,
       updateHighlight,
       showPopups,
@@ -492,16 +725,24 @@ export default function ScrollySection() {
     ],
   );
 
+  // ── Navigasi antar step ───────────────────────────────────
   const goToStep = useCallback(
     (idx: number) => {
       if (!mapRef.current || !mapReady) return;
       if (idx === lastStep.current && !isFlying.current) return;
+
+      const prevStep = lastStep.current;
+      setDirection(idx > prevStep ? 1 : -1);
       lastStep.current = idx;
+
       const step = STEPS[idx];
       isFlying.current = true;
       stopSectionRotation();
-      updateHighlight(step.highest.name, step.lowest.name);
-      showPopups(step);
+
+      // Hapus semua popup & highlight sebelum ganti step
+      removeAllPopups();
+      clearHighlight();
+
       mapRef.current.flyTo({
         center: step.flyTo.center,
         zoom: step.flyTo.zoom,
@@ -510,8 +751,20 @@ export default function ScrollySection() {
         duration: 2200,
         easing: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
       });
+
       mapRef.current.once("moveend", () => {
         isFlying.current = false;
+
+        if (step.isClustering) {
+          // ── Step clustering: tampilkan warna 3 kluster
+          updateClusterHighlight();
+          showClusterPopups();
+        } else {
+          // ── Step biasa: highlight tertinggi / terendah
+          updateHighlight(step.highest.name, step.lowest.name);
+          showPopups(step);
+        }
+
         startSectionRotation(step.flyTo.bearing);
       });
     },
@@ -519,32 +772,38 @@ export default function ScrollySection() {
       mapRef,
       mapReady,
       stopSectionRotation,
+      removeAllPopups,
+      clearHighlight,
       updateHighlight,
       showPopups,
+      updateClusterHighlight,
+      showClusterPopups,
       startSectionRotation,
     ],
   );
 
   useEffect(() => {
     if (!visible) {
-      removePopups();
+      removeAllPopups();
       clearHighlight();
       setUiVisible(false);
     }
-  }, [visible, removePopups, clearHighlight]);
+  }, [visible, removeAllPopups, clearHighlight]);
 
   useEffect(() => {
-    const onScroll = () => {
+    const handleScrollLogic = () => {
       if (!sectionRef.current) return;
       const rect = sectionRef.current.getBoundingClientRect();
       const vh = window.innerHeight;
       const inView = rect.top < vh * 0.7 && rect.bottom > vh * 0.3;
       setVisible(inView);
+
       if (rect.top > vh * 0.4) {
         if (hasZoomedIn.current && !isResetting.current) resetToGlobe();
         return;
       }
       if (!inView) return;
+
       if (!hasZoomedIn.current) {
         if (mapReady && !isZooming.current && !heroScrolling) {
           if (geojsonReady.current) triggerZoomIn(0);
@@ -552,6 +811,7 @@ export default function ScrollySection() {
         }
         return;
       }
+
       const scrolled = -rect.top;
       const total = sectionRef.current.offsetHeight - vh;
       const progress = Math.max(0, Math.min(0.999, scrolled / total));
@@ -564,8 +824,18 @@ export default function ScrollySection() {
         goToStep(stepIdx);
       }
     };
+
+    const onScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        handleScrollLogic();
+        ticking.current = false;
+      });
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    handleScrollLogic();
     return () => window.removeEventListener("scroll", onScroll);
   }, [
     activeStep,
@@ -578,21 +848,28 @@ export default function ScrollySection() {
 
   useEffect(
     () => () => {
-      removePopups();
+      removeAllPopups();
       stopSectionRotation();
     },
-    [removePopups, stopSectionRotation],
+    [removeAllPopups, stopSectionRotation],
   );
 
   return (
     <>
       <ScrollHint visible={visible && globeMode && !heroScrolling} />
+
       {uiVisible && visible && !globeMode && (
         <>
-          <NarrativeBox step={STEPS[activeStep]} index={activeStep} visible />
+          <NarrativeBox
+            step={STEPS[activeStep]}
+            index={activeStep}
+            visible
+            direction={direction}
+          />
           <ProgressDots total={STEPS.length} current={activeStep} />
         </>
       )}
+
       <div
         ref={sectionRef}
         style={{

@@ -51,3 +51,4 @@ export interface SummaryStats {
   change?: number; // perubahan dari tahun sebelumnya
   changeLabel?: string;
 }
+

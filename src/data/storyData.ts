@@ -7,179 +7,149 @@ import type {
 } from "../types";
 
 export const storyConfig: StoryConfig = {
-  title: "Stunting di Indonesia: Ancaman yang Tak Terlihat",
-  subtitle: "Memahami Sebaran dan Faktor Stunting di Nusa Tenggara Timur",
+  title: "Akses Kesehatan di Sulawesi Barat",
+  subtitle: "Memahami Sebaran Layanan Kesehatan di Provinsi Sulawesi Barat",
   description:
-    "Sebuah perjalanan data untuk memahami kondisi stunting anak di Provinsi Nusa Tenggara Timur melalui visualisasi interaktif.",
-  region: "Nusa Tenggara Timur",
-  mapCenter: [121.5, -8.8],
-  mapZoom: 7.0,
+    "Sebuah perjalanan data untuk memahami kondisi akses kesehatan masyarakat di Provinsi Sulawesi Barat melalui visualisasi interaktif.",
+  region: "Sulawesi Barat",
+  mapCenter: [119.4, -2.8],
+  mapZoom: 8.0,
   year: 2023,
 };
 
 export const regionData: RegionData[] = [
-  { id: "5301", name: "Kupang", value: 38.2, category: "tinggi" },
-  { id: "5302", name: "Timor Tengah Sel", value: 42.1, category: "tinggi" },
-  { id: "5303", name: "Timor Tengah Utr", value: 39.8, category: "tinggi" },
-  { id: "5304", name: "Belu", value: 35.6, category: "sedang" },
-  { id: "5305", name: "Alor", value: 41.3, category: "tinggi" },
-  { id: "5306", name: "Lembata", value: 37.9, category: "sedang" },
-  { id: "5307", name: "Flores Timur", value: 33.4, category: "sedang" },
-  { id: "5308", name: "Sikka", value: 31.2, category: "sedang" },
-  { id: "5309", name: "Ende", value: 29.7, category: "sedang" },
-  { id: "5310", name: "Ngada", value: 28.5, category: "rendah" },
-  { id: "5371", name: "Kota Kupang", value: 22.1, category: "rendah" },
+  { id: "7601", name: "Mamuju Utara", value: 82.1, category: "sedang" },
+  { id: "7602", name: "Mamuju", value: 92.66, category: "tinggi" },
+  { id: "7603", name: "Mamasa", value: 78.4, category: "sedang" },
+  { id: "7604", name: "Polewali Mandar", value: 88.2, category: "tinggi" },
+  { id: "7605", name: "Majene", value: 85.9, category: "tinggi" },
+  { id: "7606", name: "Mamuju Tengah", value: 75.43, category: "rendah" },
 ];
 
 export const trendData: TrendData[] = [
-  { year: 2018, value: 42.6, region: "NTT" },
-  { year: 2019, value: 43.8, region: "NTT" },
-  { year: 2020, value: 41.2, region: "NTT" },
-  { year: 2021, value: 37.8, region: "NTT" },
-  { year: 2022, value: 35.3, region: "NTT" },
-  { year: 2023, value: 33.1, region: "NTT" },
-  { year: 2018, value: 30.8, region: "Nasional" },
-  { year: 2019, value: 27.7, region: "Nasional" },
-  { year: 2020, value: 26.9, region: "Nasional" },
-  { year: 2021, value: 24.4, region: "Nasional" },
-  { year: 2022, value: 21.6, region: "Nasional" },
-  { year: 2023, value: 21.5, region: "Nasional" },
+  { year: 2019, value: 68.2, region: "Sulbar" },
+  { year: 2020, value: 71.4, region: "Sulbar" },
+  { year: 2021, value: 74.8, region: "Sulbar" },
+  { year: 2022, value: 79.3, region: "Sulbar" },
+  { year: 2023, value: 83.1, region: "Sulbar" },
+  { year: 2019, value: 73.5, region: "Nasional" },
+  { year: 2020, value: 76.8, region: "Nasional" },
+  { year: 2021, value: 79.1, region: "Nasional" },
+  { year: 2022, value: 82.4, region: "Nasional" },
+  { year: 2023, value: 86.7, region: "Nasional" },
 ];
 
-// ── DATA CHART untuk HeroSection ──────────────────────────────
+// ── DATA CHART BPJS ───────────────────────────────────────────
 export interface ChartPoint {
   year: number;
-  ntt: number;
+  sulbar: number;
   nasional: number;
 }
 
-export const stuntingChartData: ChartPoint[] = [
-  { year: 2019, ntt: 43.8, nasional: 27.7 },
-  { year: 2020, ntt: 41.2, nasional: 26.9 },
-  { year: 2021, ntt: 37.8, nasional: 24.4 },
-  { year: 2022, ntt: 35.3, nasional: 21.6 },
-  { year: 2023, ntt: 33.1, nasional: 21.5 },
-  { year: 2024, ntt: 30.2, nasional: 19.8 },
+export const bpjsChartData: ChartPoint[] = [
+  { year: 2019, sulbar: 68.2, nasional: 73.5 },
+  { year: 2020, sulbar: 71.4, nasional: 76.8 },
+  { year: 2021, sulbar: 74.8, nasional: 79.1 },
+  { year: 2022, sulbar: 79.3, nasional: 82.4 },
+  { year: 2023, sulbar: 83.1, nasional: 86.7 },
 ];
+
+// Alias untuk kompatibilitas HeroSection
+export const stuntingChartData = bpjsChartData.map((d) => ({
+  year: d.year,
+  ntt: d.sulbar,
+  nasional: d.nasional,
+}));
 
 export const summaryStats: SummaryStats[] = [
   {
-    label: "Prevalensi stunting NTT",
-    value: "33.1",
+    label: "Cakupan BPJS Sulbar",
+    value: "83.1",
     unit: "%",
-    change: -2.2,
+    change: 3.8,
     changeLabel: "vs 2022",
   },
   {
     label: "Rata-rata nasional",
-    value: "21.5",
+    value: "86.7",
     unit: "%",
-    change: -0.1,
+    change: 4.3,
     changeLabel: "vs 2022",
   },
-  { label: "Kabupaten di atas rata-rata", value: "8", unit: "kab/kota" },
+  { label: "Kabupaten di bawah rata-rata", value: "2", unit: "kabupaten" },
   { label: "Tahun data", value: "2023" },
 ];
 
 export const storySections: StorySection[] = [
   {
     id: "intro",
-    title: "NTT dan Beban Stunting",
-    body: "Nusa Tenggara Timur konsisten menjadi provinsi dengan angka stunting tertinggi di Indonesia. Lebih dari sepertiga anak balita di NTT mengalami stunting — jauh di atas rata-rata nasional 21,5%.",
-    mapFlyTo: { center: [121.5, -8.8], zoom: 7.0 },
+    title: "Sulawesi Barat dan Akses Kesehatan",
+    body: "Sulawesi Barat terus meningkatkan cakupan BPJS, namun masih terdapat kesenjangan antar kabupaten. Mamuju Tengah menjadi daerah dengan cakupan terendah.",
+    mapFlyTo: { center: [119.4, -2.8], zoom: 8.0 },
   },
   {
-    id: "timor",
-    title: "Timor Tengah Selatan: Episentrum Stunting",
-    body: "Kabupaten Timor Tengah Selatan mencatat angka stunting tertinggi di NTT sebesar 42,1%. Keterbatasan akses air bersih, sanitasi, dan layanan kesehatan menjadi faktor utama.",
-    mapFlyTo: { center: [124.2, -9.6], zoom: 9 },
-    highlightRegion: "5302",
+    id: "mamuju",
+    title: "Mamuju: Cakupan BPJS Tertinggi",
+    body: "Kabupaten Mamuju mencatat cakupan BPJS tertinggi di Sulbar sebesar 92,66%. Sebagai ibu kota provinsi, Mamuju memiliki akses fasilitas kesehatan yang lebih baik.",
+    mapFlyTo: { center: [119.1, -2.7], zoom: 10 },
+    highlightRegion: "7602",
   },
   {
-    id: "kupang",
-    title: "Kota Kupang: Relatif Lebih Baik",
-    body: "Sebagai ibu kota provinsi, Kota Kupang mencatat stunting 22,1% — terendah di NTT namun masih di atas target nasional 14% pada 2024.",
-    mapFlyTo: { center: [123.6, -10.2], zoom: 11 },
-    highlightRegion: "5371",
+    id: "mamuju-tengah",
+    title: "Mamuju Tengah: Perlu Perhatian Lebih",
+    body: "Mamuju Tengah mencatat cakupan BPJS terendah (75,43%) sekaligus jumlah tenaga medis dan fasilitas kesehatan paling sedikit. Intervensi terpadu sangat diperlukan.",
+    mapFlyTo: { center: [119.6, -2.5], zoom: 10 },
+    highlightRegion: "7606",
   },
   {
     id: "trend",
-    title: "Tren Menurun, Masih Jauh dari Target",
-    body: "Angka stunting NTT turun dari 42,6% (2018) menjadi 33,1% (2023). Meski membaik, NTT masih tertinggal 11,6 poin dari rata-rata nasional.",
-    mapFlyTo: { center: [121.5, -8.8], zoom: 7.0 },
+    title: "Tren Membaik, Masih Ada Gap",
+    body: "Cakupan BPJS Sulbar naik dari 68,2% (2019) menjadi 83,1% (2023). Meski tren positif, Sulbar masih 3,6 poin di bawah rata-rata nasional.",
+    mapFlyTo: { center: [119.4, -2.8], zoom: 8.0 },
   },
 ];
 
-// ── DATA PROTEIN ──────────────────────────────────────────────
-export interface ProteinPoint {
-  kabupaten: string;
-  value: number;
-}
-
-export const proteinData: ProteinPoint[] = [
-  { kabupaten: "Manggarai", value: 64.1 },
-  { kabupaten: "Ngada", value: 61.8 },
-  { kabupaten: "Ende", value: 59.3 },
-  { kabupaten: "Sikka", value: 57.6 },
-  { kabupaten: "Flores Timur", value: 56.2 },
-  { kabupaten: "Manggarai Barat", value: 54.9 },
-  { kabupaten: "Manggarai Timur", value: 53.7 },
-  { kabupaten: "Nagekeo", value: 52.4 },
-  { kabupaten: "Sumba Timur", value: 51.8 },
-  { kabupaten: "Lembata", value: 50.3 },
-  { kabupaten: "Sumba Tengah", value: 49.6 },
-  { kabupaten: "Belu", value: 48.9 },
-  { kabupaten: "Sumba Barat", value: 48.1 },
-  { kabupaten: "Timor Tengah Utara", value: 47.5 },
-  { kabupaten: "Alor", value: 46.8 },
-  { kabupaten: "Kupang", value: 46.2 },
-  { kabupaten: "Kota Kupang", value: 45.9 },
-  { kabupaten: "Timor Tengah Selatan", value: 45.3 },
-  { kabupaten: "Sumba Barat Daya", value: 44.9 },
-  { kabupaten: "Sabu Raijua", value: 44.8 },
-  { kabupaten: "Malaka", value: 44.77 },
-  { kabupaten: "Rote Ndao", value: 44.73 },
-];
-
-// ── DATA PIE CHART 3D — Protein NTT vs Provinsi Lain ─────────
+// ── DATA PIE CHART ─────────────────────────────────────────────
 export interface PieChartData {
   label: string;
-  value: number;   // gram/kapita/hari
-  pct: number;     // persentase relatif untuk visual
+  value: number;
+  pct: number;
 }
 
-// Rata-rata protein NTT vs rata-rata nasional tanpa NTT
-// NTT: 54.7 g/hari | Nasional (tanpa NTT): 68.4 g/hari
-// Divisualisasikan sebagai proporsi dari total keduanya
 export const proteinPieData: PieChartData[] = [
-  { label: "NTT", value: 54.7, pct: 54.7 / (54.7 + 68.4) },
-  { label: "Provinsi Lain", value: 68.4, pct: 68.4 / (54.7 + 68.4) },
+  { label: "Sulbar", value: 83.1, pct: 83.1 / (83.1 + 86.7) },
+  { label: "Nasional", value: 86.7, pct: 86.7 / (83.1 + 86.7) },
 ];
 
-// ── GANTI interface & data ini di storyData.ts ───────────────
-
-// Interface baru — 1 baris = 1 kategori pengeluaran
+// ── DATA PENGELUARAN (tetap untuk HeroSection) ─────────────────
 export interface PengeluaranPoint {
-  kategori: string;  // "Makanan" | "Non-Makanan"
-  value: number;     // Rp/kapita/bulan
-  short: string;     // label pendek
-  color: string;     // warna bar
+  kabupaten: string;
+  value: number;
+  short: string;
 }
 
-// Data NTT 2023 — rata-rata provinsi (Susenas 2023)
-// Total pengeluaran: Rp838.467/kapita/bulan
-// Makanan 61,3% | Non-makanan 38,7%
 export const pengeluaranData: PengeluaranPoint[] = [
-  {
-    kategori: "Pengeluaran Makanan",
-    value: 514309,
-    short: "Makanan",
-    color: "#7c3aed",
-  },
-  {
-    kategori: "Pengeluaran Non-Makanan",
-    value: 324157,
-    short: "Non-Makanan",
-    color: "#0891b2",
-  },
+  { kabupaten: "Mamuju", value: 645882, short: "Mamuju" },
+  { kabupaten: "Majene", value: 598430, short: "Majene" },
+  { kabupaten: "Polewali Mandar", value: 572860, short: "Polman" },
+  { kabupaten: "Mamasa", value: 534760, short: "Mamasa" },
+  { kabupaten: "Mamuju Utara", value: 498320, short: "Mam Utara" },
+  { kabupaten: "Mamuju Tengah", value: 450209, short: "Mam Tengah" },
+];
+
+// ── DATA SULBAR UNTUK SCROLLYSECTION ──────────────────────────
+export interface SulbarKabData {
+  kabupaten: string;
+  bpjsPct: number; // % penduduk ber-BPJS
+  tenagaMedis: number; // jumlah tenaga medis
+  faskes: number; // jumlah fasilitas kesehatan
+}
+
+export const sulbarData: SulbarKabData[] = [
+  { kabupaten: "Mamuju", bpjsPct: 92.66, tenagaMedis: 198, faskes: 29 },
+  { kabupaten: "Polewali Mandar", bpjsPct: 88.2, tenagaMedis: 241, faskes: 26 },
+  { kabupaten: "Majene", bpjsPct: 85.9, tenagaMedis: 187, faskes: 22 },
+  { kabupaten: "Mamuju Utara", bpjsPct: 82.1, tenagaMedis: 143, faskes: 18 },
+  { kabupaten: "Mamasa", bpjsPct: 78.4, tenagaMedis: 112, faskes: 15 },
+  { kabupaten: "Mamuju Tengah", bpjsPct: 75.43, tenagaMedis: 53, faskes: 12 },
 ];

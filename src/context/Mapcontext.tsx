@@ -60,9 +60,8 @@ export function MapProvider({ children }: { children: ReactNode }) {
 
     mapRef.current = new mapboxgl.Map({
       container: containerRef.current,
-      // satellite-streets tetap support globe projection
       style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: [118.0, -2.0],
+      center: [119.4, -2.8],
       zoom: 1.8,
       pitch: 0,
       bearing: 0,
@@ -73,15 +72,15 @@ export function MapProvider({ children }: { children: ReactNode }) {
     mapRef.current.on("load", () => {
       const m = mapRef.current!;
 
-      // Fog terang — space putih, globe tetap kelihatan
       m.setFog({
-        color: "rgb(240, 245, 255)", // horizon putih kebiruan
-        "high-color": "rgb(200, 220, 255)", // langit biru sangat muda
+        color: "rgb(240, 245, 255)",
+        "high-color": "rgb(200, 220, 255)",
         "horizon-blend": 0.05,
-        "space-color": "rgb(245, 248, 255)", // space putih — bukan hitam
-        "star-intensity": 0, // matikan bintang
+        "space-color": "rgb(245, 248, 255)",
+        "star-intensity": 0,
       });
 
+      // ── highlight tertinggi / terendah ────────────────────────
       m.addSource("highlight-red", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -114,6 +113,62 @@ export function MapProvider({ children }: { children: ReactNode }) {
         type: "line",
         source: "highlight-yellow",
         paint: { "line-color": "#b45309", "line-width": 2.5 },
+      });
+
+      // ── highlight clustering (hijau / kuning-emas / merah tua) ─
+      m.addSource("cluster-1", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addSource("cluster-2", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addSource("cluster-3", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      // Kluster 1 — Hijau (Akses Baik)
+      m.addLayer({
+        id: "fill-cluster-1",
+        type: "fill",
+        source: "cluster-1",
+        paint: { "fill-color": "#22c55e", "fill-opacity": 0.55 },
+      });
+      m.addLayer({
+        id: "line-cluster-1",
+        type: "line",
+        source: "cluster-1",
+        paint: { "line-color": "#15803d", "line-width": 2.5 },
+      });
+
+      // Kluster 2 — Kuning (Akses Sedang)
+      m.addLayer({
+        id: "fill-cluster-2",
+        type: "fill",
+        source: "cluster-2",
+        paint: { "fill-color": "#eab308", "fill-opacity": 0.55 },
+      });
+      m.addLayer({
+        id: "line-cluster-2",
+        type: "line",
+        source: "cluster-2",
+        paint: { "line-color": "#a16207", "line-width": 2.5 },
+      });
+
+      // Kluster 3 — Merah (Akses Rendah)
+      m.addLayer({
+        id: "fill-cluster-3",
+        type: "fill",
+        source: "cluster-3",
+        paint: { "fill-color": "#ef4444", "fill-opacity": 0.6 },
+      });
+      m.addLayer({
+        id: "line-cluster-3",
+        type: "line",
+        source: "cluster-3",
+        paint: { "line-color": "#991b1b", "line-width": 2.5 },
       });
 
       startGlobeRotation();
@@ -151,7 +206,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "none",
-          background: "#f5f8ff", // fallback sebelum map load
+          background: "#f5f8ff",
         }}
       />
       {children}
