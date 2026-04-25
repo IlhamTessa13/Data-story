@@ -151,7 +151,7 @@ export default function HeroSection() {
               position: "absolute",
               width: "700%",
               height: "140%",
-              left: "-14%",
+              left: "-16%",
               top: "-30%",
               objectFit: "fill",
               pointerEvents: "none",
