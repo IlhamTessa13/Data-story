@@ -1,6 +1,7 @@
 // src/App.tsx
 import { useRef } from "react";
 import { MapProvider } from "./context/Mapcontext";
+import NavSection from "./components/navigation";
 import HeroSection from "./components/HeroSection";
 import ScrollySection from "./components/ScrollySection";
 import IntroSection from "./components/IntroSection";
@@ -12,6 +13,13 @@ import LifeExpectancySection from "./components/LifeExpectancySection";
 import FooterSection from "./components/FooterSection";
 import { storyConfig } from "./data/storyData";
 
+const sectionBg: React.CSSProperties = {
+  background: "radial-gradient(ellipse at 100% 50%, #B8FFE7 0%, #F5FFFE 65%)",
+  position: "relative",
+  zIndex: 2,
+  isolation: "isolate",
+};
+
 function App() {
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -20,24 +28,65 @@ function App() {
       <div
         ref={mainRef}
         style={{
-          background: "#F5FFFE",
           color: "#0f172a",
           minHeight: "100vh",
+          position: "relative",
         }}
       >
-        <HeroSection config={storyConfig} />
+        {/* Navigation — sticky, mengambang di atas semua konten */}
+        <NavSection />
 
-        {/* Uncomment saat section sudah dibuat: */}
-        <IntroSection /> 
-        <BpjsSection /> 
-        <FacilitySection />
-        <QuotesSection />
-        <MedicalSection /> 
-        <LifeExpectancySection /> 
+        {/* 1. Hero — naik ke belakang nav dengan margin negatif */}
+        <section
+          id="hero"
+          style={{
+            ...sectionBg,
+            marginTop: "-62px", // naik sebesar tinggi navbar
+          }}
+        >
+          <HeroSection config={storyConfig} />
+        </section>
 
-        <ScrollySection />
+        {/* 2. Latar Belakang */}
+        <section id="latar-belakang" style={sectionBg}>
+          <IntroSection />
+        </section>
 
-        {/* <FooterSection /> */}
+        {/* 3. BPJS */}
+        <section id="bpjs" style={sectionBg}>
+          <BpjsSection />
+        </section>
+
+        {/* 4. Fasilitas Kesehatan Per Kabupaten */}
+        <section id="fasilitas" style={sectionBg}>
+          <FacilitySection />
+        </section>
+
+        {/* 5. Quote */}
+        <div style={sectionBg}>
+          <QuotesSection />
+        </div>
+
+        {/* 6. Tenaga Kesehatan */}
+        <section id="tenaga-medis" style={sectionBg}>
+          <MedicalSection />
+        </section>
+
+        {/* 7. Tren AHH */}
+        <section
+          id="tren-ahh"
+          style={{ position: "relative", zIndex: 2, isolation: "isolate" }}
+        >
+        <LifeExpectancySection />
+        </section>
+
+        {/* 8. Scrollytelling Mapbox */}
+        <section id="peta" style={{ position: "relative", zIndex: 1 }}>
+          <ScrollySection />
+        </section>
+
+        {/* 9. Footer */}
+        <FooterSection />
       </div>
     </MapProvider>
   );

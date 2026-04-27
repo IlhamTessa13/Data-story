@@ -8,9 +8,9 @@ export default function IntroSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setVisible(true);
+        setVisible(entry.isIntersecting);
       },
-      { threshold: 0.08 },
+      { threshold: 0.06 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -27,7 +27,7 @@ export default function IntroSection() {
       ref={ref}
       style={{
         position: "relative",
-        background: "#C5EDEA",
+        background: "transparent",
         overflow: "hidden",
         padding:
           "clamp(3rem,7vh,5rem) clamp(1.5rem,6vw,7rem) clamp(6rem,12vh,10rem)",
@@ -60,9 +60,9 @@ export default function IntroSection() {
         aria-hidden="true"
         style={{
           position: "absolute",
-          bottom: "-3rem",
+          bottom: "0rem",
           right: "-1rem",
-          width: "clamp(200px, 26vw, 340px)",
+          width: "clamp(150x, 22vw, 260px)",
           pointerEvents: "none",
           userSelect: "none",
           zIndex: 2,
@@ -176,7 +176,7 @@ export default function IntroSection() {
                 userSelect: "none",
                 left: "-83px",
                 top: "-70px",
-                opacity:0.7,
+                opacity: 0.7,
               }}
             />
             <h2
@@ -276,7 +276,14 @@ export default function IntroSection() {
               Angka Harapan Hidup (AHH) merupakan salah satu indikator utama
               dalam mengukur kualitas hidup dan pembangunan manusia. Indonesia
               mencatat peningkatan AHH secara nasional, namun{" "}
-              <strong style={{ fontWeight: 800 }}>
+              <strong
+                style={{
+                  fontWeight: 800,
+                  backgroundColor: "#e7f5ff",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
                 disparitas antar provinsi masih menjadi persoalan serius.
               </strong>
             </p>
@@ -290,11 +297,20 @@ export default function IntroSection() {
                 margin: "0 0 1.1rem",
               }}
             >
-              Sulawesi Barat konsisten menempati posisi bawah dalam peringkat
-              AHH nasional berdasarkan data BPS — bersama Papua Pegunungan dan
-              Papua Selatan. Kondisi ini mencerminkan kesenjangan struktural:
-              keterbatasan BPJS, kurangnya tenaga medis, dan minimnya fasilitas
-              kesehatan yang dapat dijangkau.
+              <strong
+                style={{
+                  fontWeight: 800,
+                  backgroundColor: "#EFB718",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                Sulawesi Barat konsisten menempati posisi bawah
+              </strong>{" "}
+              dalam peringkat AHH nasional berdasarkan data BPS bersama Papua
+              Pegunungan dan Papua Selatan. Kondisi ini mencerminkan kesenjangan
+              struktural, keterbatasan BPJS, kurangnya tenaga medis, dan
+              minimnya fasilitas kesehatan yang dapat dijangkau.
             </p>
             <p
               style={{
@@ -307,7 +323,7 @@ export default function IntroSection() {
               }}
             >
               Sebagai provinsi muda (berdiri 2004), Sulbar menghadapi tantangan
-              ganda: membangun infrastruktur kesehatan dari awal sekaligus
+              ganda, membangun infrastruktur kesehatan dari awal sekaligus
               melayani populasi yang tersebar di wilayah dengan{" "}
               <strong style={{ fontWeight: 800 }}>
                 geografis yang sulit dan berbukit.

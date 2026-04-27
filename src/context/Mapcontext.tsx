@@ -72,11 +72,12 @@ export function MapProvider({ children }: { children: ReactNode }) {
     mapRef.current.on("load", () => {
       const m = mapRef.current!;
 
+      // Fog menggunakan warna solid (bukan CSS gradient)
       m.setFog({
-        color: "rgb(240, 245, 255)",
-        "high-color": "rgb(200, 220, 255)",
+        color: "rgb(245, 255, 254)", // #F5FFFE
+        "high-color": "rgb(184, 255, 231)", // #B8FFE7
         "horizon-blend": 0.05,
-        "space-color": "rgb(245, 248, 255)",
+        "space-color": "rgb(245, 255, 254)",
         "star-intensity": 0,
       });
 
@@ -90,32 +91,35 @@ export function MapProvider({ children }: { children: ReactNode }) {
         data: { type: "FeatureCollection", features: [] },
       });
 
+      // Tertinggi — oranye (#FF9B4A) border merah (#DB6058)
       m.addLayer({
         id: "fill-red",
         type: "fill",
         source: "highlight-red",
-        paint: { "fill-color": "#ef4444", "fill-opacity": 0.55 },
+        paint: { "fill-color": "#FF9B4A", "fill-opacity": 0.7 },
       });
       m.addLayer({
         id: "line-red",
         type: "line",
         source: "highlight-red",
-        paint: { "line-color": "#b91c1c", "line-width": 2.5 },
+        paint: { "line-color": "#DB6058", "line-width": 2.5 },
       });
+
+      // Terendah — kuning (#FFEA4F) border (#EFB718)
       m.addLayer({
         id: "fill-yellow",
         type: "fill",
         source: "highlight-yellow",
-        paint: { "fill-color": "#f59e0b", "fill-opacity": 0.55 },
+        paint: { "fill-color": "#FFEA4F", "fill-opacity": 0.7 },
       });
       m.addLayer({
         id: "line-yellow",
         type: "line",
         source: "highlight-yellow",
-        paint: { "line-color": "#b45309", "line-width": 2.5 },
+        paint: { "line-color": "#EFB718", "line-width": 2.5 },
       });
 
-      // ── highlight clustering (hijau / kuning-emas / merah tua) ─
+      // ── highlight clustering ──────────────────────────────────
       m.addSource("cluster-1", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -129,18 +133,18 @@ export function MapProvider({ children }: { children: ReactNode }) {
         data: { type: "FeatureCollection", features: [] },
       });
 
-      // Kluster 1 — Hijau (Akses Baik)
+      // Kluster 1 — Biru (Akses Baik)
       m.addLayer({
         id: "fill-cluster-1",
         type: "fill",
         source: "cluster-1",
-        paint: { "fill-color": "#22c55e", "fill-opacity": 0.55 },
+        paint: { "fill-color": "#3B82F6", "fill-opacity": 0.6 },
       });
       m.addLayer({
         id: "line-cluster-1",
         type: "line",
         source: "cluster-1",
-        paint: { "line-color": "#15803d", "line-width": 2.5 },
+        paint: { "line-color": "#1D4ED8", "line-width": 2.5 },
       });
 
       // Kluster 2 — Kuning (Akses Sedang)
@@ -148,7 +152,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-cluster-2",
         type: "fill",
         source: "cluster-2",
-        paint: { "fill-color": "#eab308", "fill-opacity": 0.55 },
+        paint: { "fill-color": "#eab308", "fill-opacity": 0.6 },
       });
       m.addLayer({
         id: "line-cluster-2",
@@ -197,6 +201,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         setHeroScrolling,
       }}
     >
+      {/* Container peta — background gradient mint */}
       <div
         ref={containerRef}
         style={{
@@ -206,7 +211,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "none",
-          background: "#f5f8ff",
+          background: "linear-gradient(to left, #B8FFE7 0%, #F5FFFE 100%)",
         }}
       />
       {children}

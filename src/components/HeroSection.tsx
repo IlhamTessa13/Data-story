@@ -25,7 +25,7 @@ export default function HeroSection() {
         position: "relative",
         width: "100%",
         minHeight: "100vh",
-        background: "#C5EDEA",
+        background: "transparent",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -48,10 +48,11 @@ export default function HeroSection() {
         }}
       />
 
-      {/* ── People illustration — anchored bottom-right ── */}
+      {/* ── People illustration ── */}
       <img
         src="/images/people.webp"
         alt="Ilustrasi berbagai generasi"
+        className="float-anim-slow"
         style={{
           position: "absolute",
           right: "0%",
@@ -151,7 +152,7 @@ export default function HeroSection() {
               position: "absolute",
               width: "700%",
               height: "140%",
-              left: "-16%",
+              left: "-14%",
               top: "-30%",
               objectFit: "fill",
               pointerEvents: "none",
@@ -207,9 +208,9 @@ export default function HeroSection() {
                 border: "1.2px solid rgba(219,96,88,0.38)",
               }}
             >
-              71,03 tahun
+              66,27 tahun
             </span>{" "}
-            — terpaut hampir tiga tahun di bawah rata-rata nasional. Angka ini
+            — terpaut hampir delapan tahun di bawah rata-rata nasional. Angka ini
             bukan takdir. Ini adalah cerminan sebuah sistem yang belum bekerja.
           </p>
         </motion.div>
@@ -232,7 +233,7 @@ export default function HeroSection() {
           <StatBox
             bgSrc="/images/box1.webp"
             label="AHH SULBAR 2024"
-            value="71,03"
+            value="66,27"
             valueColor="#0C2726"
           />
           <StatBox
@@ -244,7 +245,7 @@ export default function HeroSection() {
           <StatBox
             bgSrc="/images/box2.webp"
             label="SELISIH"
-            value="3,12"
+            value="7,88"
             valueColor="#DB6058"
           />
         </motion.div>
@@ -277,7 +278,7 @@ function StatBox({ bgSrc, label, value, valueColor }: StatBoxProps) {
         flexDirection: "column",
         alignItems: "center", // ← tengah horizontal
         gap: 1,
-        top:"-20px",
+        top: "-20px",
       }}
     >
       {/* Background — clip sendiri agar border-radius tetap rapi */}
