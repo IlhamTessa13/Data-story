@@ -96,13 +96,13 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-red",
         type: "fill",
         source: "highlight-red",
-        paint: { "fill-color": "#FF9B4A", "fill-opacity": 0.7 },
+        paint: { "fill-color": "#FFEA4F", "fill-opacity": 1 },
       });
       m.addLayer({
         id: "line-red",
         type: "line",
         source: "highlight-red",
-        paint: { "line-color": "#DB6058", "line-width": 2.5 },
+        paint: { "line-color": "#EFB718", "line-width": 2.5 },
       });
 
       // Terendah — kuning (#FFEA4F) border (#EFB718)
@@ -110,13 +110,13 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-yellow",
         type: "fill",
         source: "highlight-yellow",
-        paint: { "fill-color": "#FFEA4F", "fill-opacity": 0.7 },
+        paint: { "fill-color": "#FF9B4A", "fill-opacity": 1 },
       });
       m.addLayer({
         id: "line-yellow",
         type: "line",
         source: "highlight-yellow",
-        paint: { "line-color": "#EFB718", "line-width": 2.5 },
+        paint: { "line-color": "#DB6058", "line-width": 2.5 },
       });
 
       // ── highlight clustering ──────────────────────────────────

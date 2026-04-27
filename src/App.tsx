@@ -12,6 +12,7 @@ import MedicalSection from "./components/MedicalSection";
 import LifeExpectancySection from "./components/LifeExpectancySection";
 import FooterSection from "./components/FooterSection";
 import { storyConfig } from "./data/storyData";
+import ShowSection from "./components/ShowSection";
 
 const sectionBg: React.CSSProperties = {
   background: "radial-gradient(ellipse at 100% 50%, #B8FFE7 0%, #F5FFFE 65%)",
@@ -77,12 +78,16 @@ function App() {
           id="tren-ahh"
           style={{ position: "relative", zIndex: 2, isolation: "isolate" }}
         >
-        <LifeExpectancySection />
+          <LifeExpectancySection />
         </section>
 
         {/* 8. Scrollytelling Mapbox */}
         <section id="peta" style={{ position: "relative", zIndex: 1 }}>
           <ScrollySection />
+        </section>
+
+        <section id="sorotan" style={sectionBg}>
+          <ShowSection />
         </section>
 
         {/* 9. Footer */}

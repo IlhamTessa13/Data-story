@@ -97,57 +97,35 @@ function injectPopupStyles() {
   document.head.appendChild(s);
 }
 
-function buildPopupHTML(type: "highest" | "lowest", step: StepData) {
-  const isH = type === "highest";
-  const item = isH ? step.highest : step.lowest;
-  const bgGrad = isH
-    ? "linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #8B3A2A 100%)"
-    : "linear-gradient(135deg, #7B6520 0%, #8B7530 50%, #7B5A20 100%)";
-  const accentColor = isH ? "#E8A090" : "#E8C870";
-  const badgeBg = isH ? "rgba(232,160,144,0.2)" : "rgba(232,200,112,0.2)";
-  const badgeBorder = isH ? "#E8A090" : "#E8C870";
-  const badgeText = isH ? "#F5C5B5" : "#F5E5A0";
-  const triangle = isH ? "▲" : "▼";
-  const lbl = isH ? "TERTINGGI" : "TERENDAH";
-  const icon =
-    step.id === "bpjs" ? "🏥" : step.id === "tenaga-medis" ? "👨‍⚕️" : "🏨";
+const POPUP_IMAGES: Record<string, { highest: string; lowest: string }> = {
+  bpjs: {
+    highest: "/images/tertinggi_bpjs.png",
+    lowest: "/images/terendahbpjs.png",
+  },
+  "tenaga-medis": {
+    highest: "/images/tertinggi_tenagamedis.png",
+    lowest: "/images/terendah_tenagamedis.png",
+  },
+  faskes: {
+    highest: "/images/tertinggi_fasilitas.png",
+    lowest: "/images/terendah_fasilitas.png",
+  },
+};
 
-  return `
-<div style="width:220px;background:${bgGrad};border-radius:16px;
-  border:1px solid ${accentColor}44;
-  box-shadow:0 8px 32px rgba(0,0,0,0.35);overflow:hidden;
-  font-family:'Plus Jakarta Sans',system-ui,sans-serif;">
-  <div style="padding:14px 16px 16px;">
-    <div style="display:inline-flex;align-items:center;gap:5px;
-      background:${badgeBg};border:1px solid ${badgeBorder}66;
-      color:${badgeText};font-size:9px;font-weight:800;letter-spacing:0.14em;
-      padding:3px 10px;border-radius:20px;margin-bottom:12px;text-transform:uppercase;">
-      ${triangle}&nbsp;&nbsp;${lbl}
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div style="width:28px;height:28px;background:rgba(255,255,255,0.15);
-        border-radius:8px;display:flex;align-items:center;justify-content:center;
-        font-size:14px;flex-shrink:0;">${icon}</div>
-      <div style="font-size:9.5px;font-weight:800;color:rgba(255,255,255,0.75);
-        text-transform:uppercase;letter-spacing:0.1em;">${step.variableLabel}</div>
-    </div>
-    <div style="font-size:32px;font-weight:800;color:#FFFFFF;line-height:1;
-      margin-bottom:12px;letter-spacing:-0.01em;">
-      ${fmtVal(item.value, step.unit)}
-    </div>
-    <div style="display:inline-flex;align-items:center;gap:6px;
-      background:${accentColor}25;border:1px solid ${accentColor}55;
-      border-radius:8px;padding:5px 10px;">
-      <div style="width:6px;height:6px;border-radius:50%;background:${accentColor};flex-shrink:0;"></div>
-      <span style="font-size:11px;font-weight:700;color:#FFFFFF;">${item.name}</span>
-    </div>
-  </div>
-</div>`;
+function buildPopupHTML(type: "highest" | "lowest", step: StepData) {
+  const src = POPUP_IMAGES[step.id]?.[type];
+  if (!src) return "";
+  return `<img src="${src}" style="width:220px;display:block;border-radius:16px;" />`;
 }
+const NARRATIVE_IMAGES: Record<string, string> = {
+  bpjs: "/images/cakupanbpjs.png",
+  "tenaga-medis": "/images/tenagamedis.png",
+  faskes: "/images/fasilitaskesehatan.png",
+  clustering: "/images/kluster.png",
+};
 
 function NarrativeBox({
   step,
-  index,
   visible,
   direction,
 }: {
@@ -156,7 +134,8 @@ function NarrativeBox({
   visible: boolean;
   direction: number;
 }) {
-  const icons = ["🏥", "👨‍⚕️", "🏨", "🔬"];
+  const src = NARRATIVE_IMAGES[step.id];
+  if (!src) return null;
 
   return (
     <AnimatePresence mode="wait" custom={direction}>
@@ -173,203 +152,18 @@ function NarrativeBox({
             bottom: 32,
             left: 32,
             zIndex: 55,
-            width: "min(480px,42vw)",
-            background: "linear-gradient(135deg, #1a4a4a 0%, #1e5a5a 100%)",
-            backdropFilter: "blur(20px)",
-            borderRadius: 20,
-            border: "1px solid rgba(93,212,200,0.3)",
-            boxShadow: "0 12px 48px rgba(0,0,0,0.4)",
-            overflow: "hidden",
+            width: "min(480px, 42vw)",
           }}
         >
-          <div
+          <img
+            src={src}
+            alt={step.variableLabel}
             style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "10px 52px 10px 18px",
-              background: "rgba(0,0,0,0.15)",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              minHeight: 48,
+              width: "100%",
+              display: "block",
+              borderRadius: 20,
             }}
-          >
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "#FFFFFF",
-                borderRadius: 24,
-                padding: "5px 14px 5px 8px",
-              }}
-            >
-              <div
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: 8,
-                  background: "rgba(0,0,0,0.07)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 13,
-                }}
-              >
-                {icons[index]}
-              </div>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 800,
-                  letterSpacing: "0.13em",
-                  color: "#0C2726",
-                  textTransform: "uppercase",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                }}
-              >
-                {step.variableLabel}
-              </span>
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                right: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "#FFFFFF",
-                borderRadius: 8,
-                padding: "4px 10px",
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#0C2726",
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                letterSpacing: "0.05em",
-              }}
-            >
-              {index + 1}/{STEPS.length}
-            </div>
-          </div>
-
-          <div style={{ padding: "14px 18px 16px" }}>
-            <p
-              style={{
-                fontSize: 13,
-                color: "rgba(255,255,255,0.85)",
-                lineHeight: 1.85,
-                margin: 0,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}
-            >
-              {step.narrative}
-            </p>
-
-            {step.isClustering && (
-              <div
-                style={{
-                  marginTop: 14,
-                  paddingTop: 12,
-                  borderTop: "1px solid rgba(255,255,255,0.1)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                }}
-              >
-                {(
-                  [
-                    {
-                      k: 1 as const,
-                      label: "KLUSTER 1 — AKSES BAIK",
-                      members: ["Mamuju", "Polewali Mandar", "Majene"],
-                      color: "#3B82F6",
-                      bg: "rgba(59,130,246,0.15)",
-                      border: "rgba(59,130,246,0.35)",
-                    },
-                    {
-                      k: 2 as const,
-                      label: "KLUSTER 2 — AKSES SEDANG",
-                      members: ["Mamuju Utara", "Mamasa"],
-                      color: "#eab308",
-                      bg: "rgba(234,179,8,0.15)",
-                      border: "rgba(234,179,8,0.35)",
-                    },
-                    {
-                      k: 3 as const,
-                      label: "KLUSTER 3 — AKSES RENDAH",
-                      members: ["Mamuju Tengah"],
-                      color: "#ef4444",
-                      bg: "rgba(239,68,68,0.15)",
-                      border: "rgba(239,68,68,0.35)",
-                    },
-                  ] as const
-                ).map(({ k, label, members, color, bg, border }) => (
-                  <div
-                    key={k}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        background: bg,
-                        border: `1px solid ${border}`,
-                        borderRadius: 6,
-                        padding: "4px 9px",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: 2,
-                          background: color,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span
-                        style={{
-                          fontSize: 8.5,
-                          fontWeight: 800,
-                          color,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        }}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                      {members.map((m) => (
-                        <span
-                          key={m}
-                          style={{
-                            background: `${color}22`,
-                            border: `1px solid ${color}44`,
-                            borderRadius: 5,
-                            padding: "2px 7px",
-                            fontSize: 9,
-                            fontWeight: 600,
-                            color: "rgba(255,255,255,0.85)",
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          }}
-                        >
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          />
         </motion.div>
       )}
     </AnimatePresence>
@@ -474,7 +268,6 @@ function ZoomOutOverlay({ visible }: { visible: boolean }) {
               textAlign: "center",
             }}
           >
-            Melihat gambaran lebih besar...
           </motion.div>
         </motion.div>
       )}
