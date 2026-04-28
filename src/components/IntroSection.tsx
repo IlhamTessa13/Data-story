@@ -257,7 +257,7 @@ export default function IntroSection() {
               background: "rgba(255, 248, 215, 0.75)",
               border: "1px solid rgba(219,188,100,0.4)",
               borderRadius: 18,
-              padding: "clamp(1.4rem, 3vw, 2.2rem)",
+              padding: "clamp(0.6rem, 2.5vw, 1.5rem)",
               boxShadow: "0 4px 28px rgba(0,0,0,0.07)",
               position: "relative",
               zIndex: 5,
@@ -273,13 +273,23 @@ export default function IntroSection() {
                 margin: "0 0 1.1rem",
               }}
             >
-              Angka Harapan Hidup (AHH) merupakan salah satu indikator utama
-              dalam mengukur kualitas hidup dan pembangunan manusia. Indonesia
-              mencatat peningkatan AHH secara nasional, namun{" "}
               <strong
                 style={{
-                  fontWeight: 800,
-                  backgroundColor: "#e7f5ff",
+                  fontWeight: 700,
+                  backgroundColor: "#FFDA8C",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                Angka Harapan Hidup (AHH)
+              </strong>{" "}
+              merupakan salah satu indikator utama dalam mengukur kualitas hidup
+              dan pembangunan manusia. Indonesia mencatat peningkatan AHH secara
+              nasional, namun{" "}
+              <strong
+                style={{
+                  fontWeight: 700,
+                  backgroundColor: "#FFDA8C",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}
@@ -299,18 +309,48 @@ export default function IntroSection() {
             >
               <strong
                 style={{
-                  fontWeight: 800,
-                  backgroundColor: "#EFB718",
+                  fontWeight: 700,
+                  backgroundColor: "#FFDA8C",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}
               >
                 Sulawesi Barat konsisten menempati posisi bawah
               </strong>{" "}
-              dalam peringkat AHH nasional berdasarkan data BPS bersama Papua
+              dalam peringkat AHH nasional berdasarkan data BPS ── bersama Papua
               Pegunungan dan Papua Selatan. Kondisi ini mencerminkan kesenjangan
-              struktural, keterbatasan BPJS, kurangnya tenaga medis, dan
-              minimnya fasilitas kesehatan yang dapat dijangkau.
+              struktural:
+              <strong
+                style={{
+                  fontWeight: 700,
+                  backgroundColor: "#FFDBDD",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                keterbatasan BPJS,
+              </strong>
+              <strong
+                style={{
+                  fontWeight: 700,
+                  backgroundColor: "#B4F1E1",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                kurangnya tenaga medis,
+              </strong>{" "}
+              dan
+              <strong
+                style={{
+                  fontWeight: 700,
+                  backgroundColor: "#B3FF6D",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                minimnya fasilitas kesehatan yang dapat dijangkau.
+              </strong>
             </p>
             <p
               style={{
@@ -319,15 +359,22 @@ export default function IntroSection() {
                 fontWeight: "600",
                 lineHeight: 1.9,
                 color: "#1e2d2c",
-                margin: 0,
+                margin: "0 0 1.1rem",
               }}
             >
-              Sebagai provinsi muda (berdiri 2004), Sulbar menghadapi tantangan
-              ganda, membangun infrastruktur kesehatan dari awal sekaligus
-              melayani populasi yang tersebar di wilayah dengan{" "}
-              <strong style={{ fontWeight: 800 }}>
-                geografis yang sulit dan berbukit.
+              <strong
+                style={{
+                  fontWeight: 700,
+                  backgroundColor: "#FFDA8C",
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                }}
+              >
+                Sebagai provinsi muda (berdiri 2004),{" "}
               </strong>
+              Sulbar menghadapi tantangan ganda, membangun infrastruktur
+              kesehatan dari awal sekaligus melayani populasi yang tersebar di
+              wilayah dengan geografis yang sulit dan berbukit.
             </p>
           </div>
         </div>

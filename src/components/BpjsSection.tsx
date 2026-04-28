@@ -338,7 +338,7 @@ export default function BpjsSection() {
               <strong
                 style={{
                   fontWeight: 700,
-                  backgroundColor: "#ffe3e3",
+                  backgroundColor: "#FFDA8C",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}
@@ -349,7 +349,7 @@ export default function BpjsSection() {
               <strong
                 style={{
                   fontWeight: 700,
-                  backgroundColor: "#ffe3e3",
+                  backgroundColor: "#FFDA8C",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}
@@ -360,7 +360,7 @@ export default function BpjsSection() {
               <strong
                 style={{
                   fontWeight: 700,
-                  backgroundColor: "#e7f5ff",
+                  backgroundColor: "#B4F1E1",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}
@@ -372,7 +372,7 @@ export default function BpjsSection() {
               <strong
                 style={{
                   fontWeight: 700,
-                  backgroundColor: "#ebfbee",
+                  backgroundColor: "#FFDBDD",
                   padding: "2px 4px",
                   borderRadius: "4px",
                 }}

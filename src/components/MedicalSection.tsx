@@ -391,6 +391,20 @@ export default function MedicalSection() {
           </p>
         </div>
       </div>
+      {/* Gradient fade ke bawah — nyambung ke LifeExpectancy */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "220px",
+          background:
+             "linear-gradient(to bottom left, transparent 0%, #d5f5ee 100%)",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
     </section>
   );
 }

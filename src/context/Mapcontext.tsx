@@ -138,7 +138,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-cluster-1",
         type: "fill",
         source: "cluster-1",
-        paint: { "fill-color": "#3B82F6", "fill-opacity": 0.6 },
+        paint: { "fill-color": "#3B82F6", "fill-opacity": 1 },
       });
       m.addLayer({
         id: "line-cluster-1",
@@ -152,7 +152,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-cluster-2",
         type: "fill",
         source: "cluster-2",
-        paint: { "fill-color": "#eab308", "fill-opacity": 0.6 },
+        paint: { "fill-color": "#eab308", "fill-opacity": 1 },
       });
       m.addLayer({
         id: "line-cluster-2",
@@ -166,7 +166,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         id: "fill-cluster-3",
         type: "fill",
         source: "cluster-3",
-        paint: { "fill-color": "#ef4444", "fill-opacity": 0.6 },
+        paint: { "fill-color": "#ef4444", "fill-opacity": 1 },
       });
       m.addLayer({
         id: "line-cluster-3",

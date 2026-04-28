@@ -14,8 +14,8 @@ const CENTROIDS: Record<string, [number, number]> = {
 
 export const CLUSTER_MEMBERS: Record<1 | 2 | 3, string[]> = {
   1: ["MAMUJU", "POLEWALI MANDAR"],
-  2: ["MAMUJU TENGAH", "MAJENE"],
-  3: ["PASANGKAYU", "MAMASA"],
+  2: ["PASANGKAYU", "MAMASA"],
+  3: ["MAMUJU TENGAH", "MAJENE"],
 };
 
 interface StepData {
