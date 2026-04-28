@@ -52,7 +52,7 @@ export default function HeroSection() {
       <img
         src="/images/people.webp"
         alt="Ilustrasi berbagai generasi"
-        className="float-anim-slow"
+        className="float-anim-slow hero-people-img"
         style={{
           position: "absolute",
           right: "0%",
@@ -180,6 +180,7 @@ export default function HeroSection() {
           />
 
           <p
+            className="hero-desc-p"
             style={{
               position: "relative",
               zIndex: 2,
@@ -210,14 +211,16 @@ export default function HeroSection() {
             >
               66,27 tahun
             </span>{" "}
-            , terpaut hampir delapan tahun di bawah rata-rata nasional. Angka ini
-            bukan takdir. Ini adalah cerminan sebuah sistem yang belum bekerja.
+            , terpaut hampir delapan tahun di bawah rata-rata nasional. Angka
+            ini bukan takdir. Ini adalah cerminan sebuah sistem yang belum
+            bekerja.
           </p>
         </motion.div>
 
         {/* ── Stat boxes ── */}
         <motion.div
           {...fade(0.62)}
+          className="hero-stat-boxes"
           style={{
             display: "flex",
             gap: "0.5rem",

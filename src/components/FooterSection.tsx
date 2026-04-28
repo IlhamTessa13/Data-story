@@ -153,8 +153,8 @@ const FooterSection = () => {
             textAlign: "center",
           }}
         >
-          Angka harapan hidup Sulawesi Barat bukan hanya statistik — ia adalah
-          cerminan dari setiap puskesmas yang kekurangan dokter, setiap warga
+          Angka harapan hidup Sulawesi Barat bukan hanya statistik, tetapi
+          cerminan dari setiap faskes yang kekurangan tenaga medis, setiap warga
           tanpa BPJS, dan setiap kilometer yang memisahkan masyarakat dari
           layanan kesehatan.
         </p>

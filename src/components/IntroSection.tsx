@@ -122,6 +122,7 @@ export default function IntroSection() {
 
       {/* ══ MAIN GRID ══ */}
       <div
+        className="intro-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",

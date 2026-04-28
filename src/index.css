@@ -134,3 +134,170 @@ section {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE UTILITIES — Data Story Sulbar
+   Import di main.tsx: import './styles/responsive.css'
+   ═══════════════════════════════════════════════ */
+
+/* ── Breakpoints
+   mobile  : < 640px
+   tablet  : 640px – 1023px
+   desktop : ≥ 1024px
+──────────────────────────────────────────────── */
+
+/* ── HeroSection ── */
+@media (max-width: 639px) {
+  .hero-stat-boxes {
+    flex-wrap: wrap !important;
+    margin-left: 0 !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+  }
+  .hero-desc-p {
+    left: 0 !important;
+    padding: 0.9rem 1.1rem !important;
+  }
+  .hero-people-img {
+    height: 45% !important;
+    top: auto !important;
+    bottom: 0 !important;
+    right: -10% !important;
+    opacity: 0.35 !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-stat-boxes {
+    flex-wrap: wrap !important;
+    margin-left: -20px !important;
+  }
+  .hero-people-img {
+    height: 50% !important;
+    opacity: 0.6 !important;
+  }
+}
+
+/* ── IntroSection ── */
+@media (max-width: 767px) {
+  .intro-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .intro-ornamen8 {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    margin-top: 2rem !important;
+  }
+}
+
+/* ── BpjsSection ── */
+@media (max-width: 767px) {
+  .bpjs-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .bpjs-col-right {
+    display: none !important; /* sembunyikan kolom logo di mobile */
+  }
+  .bpjs-mhs1 {
+    display: none !important; /* gambar besar tidak muat di mobile */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .bpjs-grid {
+    grid-template-columns: 1fr 1fr !important; /* hapus kolom ke-3 */
+  }
+  .bpjs-col-right {
+    display: none !important;
+  }
+}
+
+/* ── QuotesSection ── */
+@media (max-width: 639px) {
+  .quotes-nakes {
+    display: none !important; /* gambar nakes sembunyikan di mobile kecil */
+  }
+}
+
+/* ── ConclusionSection ── */
+@media (max-width: 1023px) {
+  .conclusion-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 2rem 1.5rem !important;
+    gap: 2rem !important;
+  }
+  .conclusion-spacer {
+    display: none !important;
+  }
+  .conclusion-card {
+    width: min(560px, 100%) !important;
+  }
+  .conclusion-mhs {
+    width: 100% !important;
+    height: 280px !important;
+    justify-content: center !important;
+  }
+}
+
+/* ── ShowSection ── */
+@media (max-width: 767px) {
+  .show-left-nav {
+    left: 0.75rem !important;
+  }
+  .show-right-info {
+    right: 0.75rem !important;
+  }
+  .show-right-info .show-title {
+    font-size: 1.5rem !important;
+  }
+  .show-card-stack {
+    width: 200px !important;
+    height: 300px !important;
+  }
+}
+
+/* ── ScrollySection NarrativeBox ── */
+@media (max-width: 767px) {
+  .narrative-box {
+    width: calc(100vw - 64px) !important;
+    left: 16px !important;
+    bottom: 16px !important;
+  }
+}
+
+/* ── FooterSection ── */
+@media (max-width: 639px) {
+  .footer-content {
+    padding: 0 1.5rem !important;
+  }
+  .footer-mhs-left,
+  .footer-mhs-right {
+    display: none !important;
+  }
+  .footer-strip {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .footer-content {
+    padding: 0 clamp(3rem, 12vw, 8rem) !important;
+  }
+  .footer-mhs-left,
+  .footer-mhs-right {
+    height: clamp(200px, 45vh, 380px) !important;
+    opacity: 0.5 !important;
+  }
+}
+
+/* ── MedicalSection ornamen ── */
+@media (max-width: 767px) {
+  .medical-ornamen11 {
+    display: none !important;
+  }
+}
