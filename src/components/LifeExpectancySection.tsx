@@ -1,4 +1,4 @@
-// LifeExpectancySection.tsx — FINAL, struktur benar
+// LifeExpectancySection.tsx — crossfade seamless ke globe
 import { useEffect, useRef, useState } from "react";
 
 const ahhData = [
@@ -30,15 +30,21 @@ function buildPath(data: number[], minV: number, maxV: number) {
     .join(" ");
 }
 
+// Cubic ease-in-out
+function easeInOut(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 export default function LifeExpectancySection() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [sectionOpacity, setSectionOpacity] = useState(1);
+  // Satu nilai opacity yang mengontrol SELURUH overlay (bg + konten)
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
 
-  // chart visibility
+  // Chart visibility
   useEffect(() => {
     const obs = new IntersectionObserver(
       ([e]) => setVisible(e.isIntersecting),
@@ -48,7 +54,7 @@ export default function LifeExpectancySection() {
     return () => obs.disconnect();
   }, []);
 
-  // chart draw animation
+  // Chart draw animation
   useEffect(() => {
     if (!visible) {
       const t = setTimeout(() => setProgress(0), 400);
@@ -67,39 +73,51 @@ export default function LifeExpectancySection() {
     return () => cancelAnimationFrame(raf);
   }, [visible]);
 
-  // fade: hitung dari posisi wrapper
+  // Scroll-driven crossfade
   useEffect(() => {
-    const handleScroll = () => {
-      if (!wrapperRef.current || !sectionRef.current) return;
+    // Globe tersembunyi saat section ini aktif
+    document.documentElement.style.setProperty("--map-fade-opacity", "0");
 
-      const wRect = wrapperRef.current.getBoundingClientRect();
-      const sectionH = sectionRef.current.offsetHeight;
-      const wrapperH = wrapperRef.current.offsetHeight;
-      const vh = window.innerHeight;
+  const handleScroll = () => {
+    if (!wrapperRef.current || !sectionRef.current) return;
 
-      // scrolled dalam wrapper
-      const scrolled = -wRect.top;
+    const wRect = wrapperRef.current.getBoundingClientRect();
+    const sectionH = sectionRef.current.offsetHeight;
+    const vh = window.innerHeight;
+    const scrolled = -wRect.top;
 
-      // Fade mulai setelah section utama selesai di-scroll
-      // Section selesai saat scrolled = sectionH - vh (bagian bawah section tepat di atas fold)
-      // Kita mulai fade sedikit lebih awal, saat section sudah tergeser ke atas
-      const fadeStart = sectionH - vh; // section baru habis
-      const fadeEnd = wrapperH - vh; // akhir wrapper
+    // Fade mulai di 1/3 tinggi section, selesai 60vh setelahnya
+    const fadeStart = sectionH * (1 / 3);
+    const fadeEnd = sectionH * (1 / 3) + vh * 0.6;
 
-      if (scrolled <= fadeStart) {
-        setSectionOpacity(1);
-      } else if (scrolled >= fadeEnd) {
-        setSectionOpacity(0);
-      } else {
-        const t = (scrolled - fadeStart) / (fadeEnd - fadeStart);
-        const eased = t * t * (3 - 2 * t);
-        setSectionOpacity(1 - eased);
-      }
-    };
+    let t: number;
+    if (scrolled <= fadeStart) {
+      t = 0;
+    } else if (scrolled >= fadeEnd) {
+      t = 1;
+    } else {
+      t = (scrolled - fadeStart) / (fadeEnd - fadeStart);
+    }
+
+    const eased = easeInOut(t);
+
+    setOverlayOpacity(1 - eased);
+
+    const globeT = Math.max(0, (t - 0.2) / 0.8);
+    const globeEased = easeInOut(Math.min(1, globeT));
+    document.documentElement.style.setProperty(
+      "--map-fade-opacity",
+      String(globeEased),
+    );
+  };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      // Pastikan globe terlihat jika component unmount
+      document.documentElement.style.setProperty("--map-fade-opacity", "1");
+    };
   }, []);
 
   const reveal = (delay = 0): React.CSSProperties => ({
@@ -119,51 +137,42 @@ export default function LifeExpectancySection() {
   const yTicks = [60, 63, 66, 69, 72];
 
   return (
-    /*
-     * WRAPPER — position relative, height = section + tail
-     * Di dalam: section (sticky) + tail div (kosong)
-     *
-     * Saat page load: section langsung kelihatan sebagai normal flow
-     *   → transisi dari Medical ke sini = scroll biasa ✓
-     *
-     * Saat user scroll melalui tail: section sticky di atas,
-     *   opacity-nya turun → globe terlihat dari belakang ✓
-     */
-    <div
-      ref={wrapperRef}
-      style={{
-        position: "relative",
-        // Tidak set height — biarkan ditentukan oleh sticky section + tail div
-        zIndex: 2,
-      }}
-    >
+    <div ref={wrapperRef} style={{ position: "relative", zIndex: 2 }}>
       {/*
-       * SECTION — sticky top:0
-       * Karena ada di dalam wrapper, dia scroll normal sampai
-       * wrapper selesai. "Sticky" di sini artinya: saat user scroll
-       * melewati section (masuk tail zone), section tetap nempel di top.
+       * SINGLE OVERLAY — background + konten jadi SATU layer.
+       * Fade keluar dengan opacity tunggal = tidak ada garis batas
+       * antara background dan konten.
        *
-       * opacity dikontrol scroll handler → fade saat tail zone
+       * Globe di belakang (zIndex: 0) crossfade masuk bersamaan
+       * via --map-fade-opacity CSS variable.
+       *
+       * willChange: "opacity" → browser buat composite layer terpisah
+       * sehingga tidak ada repaint artifact / pixel seam saat opacity berubah.
        */}
-      <section
-        ref={sectionRef}
+      <div
         style={{
           position: "sticky",
           top: 0,
           minHeight: "100vh",
-          padding: "clamp(2.5rem,6vh,5rem) clamp(1.5rem,7vw,8rem)",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          // Opacity seluruh section (background + konten) turun bersama
-          opacity: sectionOpacity,
-          // Background ada di sini, bukan di overlay terpisah
-          background:
-            "linear-gradient(160deg, #D4F5EE 0%, #E8FAF6 40%, #F0FBF8 70%, #EDF8F5 100%)",
+          opacity: overlayOpacity,
+          willChange: "opacity",
           isolation: "isolate",
+          zIndex: 1,
+          // Tambahkan mask agar tepi bawah tidak terpotong tajam
+          WebkitMaskImage:
+            "linear-gradient(to bottom, black 60%, transparent 100%)",
+          maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
         }}
       >
+        {/* Background */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(160deg, #D4F5EE 0%, #E8FAF6 40%, #effaf8 70%, #effaf8 100%)",
+          }}
+        />
         <img
           src="/images/grad2.png"
           alt=""
@@ -176,473 +185,501 @@ export default function LifeExpectancySection() {
             objectFit: "cover",
             objectPosition: "center",
             pointerEvents: "none",
-            zIndex: 0,
             opacity: 0.55,
           }}
         />
-
-        <div style={{ position: "relative", zIndex: 1 }}>
-          {/* Section label */}
-          <div
-            style={{
-              ...reveal(0.05),
-              display: "flex",
-              alignItems: "center",
-              gap: "0.6rem",
-              marginBottom: "2rem",
-            }}
-          >
-            <span
-              style={{
-                display: "inline-block",
-                width: 28,
-                height: 2,
-                background: "#F1BD1E",
-                borderRadius: 2,
-              }}
-            />
-            <span
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: "0.68rem",
-                fontWeight: 700,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase" as const,
-                color: "#F1BD1E",
-              }}
-            >
-              Tren Angka Harapan Hidup
-            </span>
-          </div>
-
-          {/* 2-col grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-              gap: "clamp(2rem,5vw,4rem)",
-              alignItems: "center",
-            }}
-          >
-            {/* LEFT */}
+        {/* Content */}
+        <section
+          ref={sectionRef}
+          style={{
+            position: "relative",
+            zIndex: 1,
+            minHeight: "100vh",
+            padding: "clamp(2.5rem,6vh,5rem) clamp(1.5rem,7vw,8rem)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {/* Section label */}
             <div
               style={{
+                ...reveal(0.05),
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
+                alignItems: "center",
+                gap: "0.6rem",
+                marginBottom: "2rem",
               }}
             >
-              <div style={reveal(0.12)}>
-                <h2 style={{ margin: "0 0 1rem", lineHeight: 1.15 }}>
-                  <span
-                    style={{
-                      fontFamily: "'Bricolage Grotesque', serif",
-                      fontWeight: 800,
-                      fontSize: "clamp(1.6rem, 3.2vw, 2.6rem)",
-                      color: "#DB6058",
-                      display: "block",
-                    }}
-                  >
-                    Tren AHH Sulbar
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "'Lora', sans-serif",
-                      fontStyle: "italic",
-                      fontWeight: 800,
-                      fontSize: "clamp(1.1rem, 2.2vw, 1.8rem)",
-                      color: "#0C2726",
-                      display: "block",
-                    }}
-                  >
-                    menurut jenis kelamin
-                  </span>
-                </h2>
-              </div>
-              <div style={reveal(0.2)}>
-                <p
-                  style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: "clamp(0.82rem, 1.3vw, 0.96rem)",
-                    fontWeight: 500,
-                    color: "#1a3a32",
-                    lineHeight: 1.85,
-                    margin: "0 0 1.6rem",
-                  }}
-                >
-                  <strong
-                    style={{
-                      fontWeight: 700,
-                      backgroundColor: "#FFDA8C",
-                      padding: "2px 4px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    AHH perempuan
-                  </strong>{" "}
-                  di Sulbar secara{" "}
-                  <strong
-                    style={{
-                      fontWeight: 700,
-                      backgroundColor: "#FFDA8C",
-                      padding: "2px 4px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    konsisten lebih tinggi
-                  </strong>{" "}
-                  dibandingkan{" "}
-                  <strong
-                    style={{
-                      fontWeight: 700,
-                      backgroundColor: "#FFDA8C",
-                      padding: "2px 4px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    laki-laki
-                  </strong>{" "}
-                  — sesuai pola nasional. Namun keduanya masih berada{" "}
-                  <strong
-                    style={{
-                      fontWeight: 700,
-                      backgroundColor: "#FFDBDD",
-                      padding: "2px 4px",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    di bawah rata-rata nasional,
-                  </strong>{" "}
-                  mencerminkan tantangan sistemik yang belum teratasi.
-                </p>
-              </div>
-              <div
+              <span
                 style={{
-                  ...reveal(0.3),
-                  display: "flex",
-                  gap: "0.9rem",
-                  flexWrap: "wrap",
-                  marginTop: "0.4rem",
+                  display: "inline-block",
+                  width: 28,
+                  height: 2,
+                  background: "#F1BD1E",
+                  borderRadius: 2,
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase" as const,
+                  color: "#F1BD1E",
                 }}
               >
-                <div
-                  style={{
-                    background: "#FFD6D3",
-                    border: "1.5px solid rgba(255,150,145,0.45)",
-                    borderRadius: 14,
-                    padding: "0.75rem 1rem",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    boxShadow: "0 4px 18px rgba(219,96,88,0.18)",
-                    minWidth: 170,
-                  }}
-                >
-                  <img
-                    src="/images/woman.png"
-                    alt="Perempuan"
-                    style={{
-                      width: "clamp(32px,5vw,44px)",
-                      height: "clamp(32px,5vw,44px)",
-                      objectFit: "contain",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: "0.56rem",
-                        fontWeight: 800,
-                        letterSpacing: "0.11em",
-                        textTransform: "uppercase" as const,
-                        color: "#000",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      AHH Perempuan 2024
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "'Bricolage Grotesque', sans-serif",
-                        fontWeight: 800,
-                        fontSize: "1.45rem",
-                        color: "#C0392B",
-                        lineHeight: 1,
-                      }}
-                    >
-                      68,27
-                      <span
-                        style={{
-                          fontSize: "0.58rem",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          fontWeight: 600,
-                          marginLeft: 3,
-                          color: "#C0392B",
-                        }}
-                      >
-                        TAHUN
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    background: "#C9E9FF",
-                    border: "1.5px solid rgba(100,180,255,0.45)",
-                    borderRadius: 14,
-                    padding: "0.75rem 1rem",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    boxShadow: "0 4px 18px rgba(60,130,220,0.16)",
-                    minWidth: 170,
-                  }}
-                >
-                  <img
-                    src="/images/man.png"
-                    alt="Laki-laki"
-                    style={{
-                      width: "clamp(32px,5vw,44px)",
-                      height: "clamp(32px,5vw,44px)",
-                      objectFit: "contain",
-                      flexShrink: 0,
-                    }}
-                  />
-                  <div>
-                    <div
-                      style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: "0.56rem",
-                        fontWeight: 800,
-                        letterSpacing: "0.11em",
-                        textTransform: "uppercase" as const,
-                        color: "#000",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      AHH Laki-laki 2024
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "'Bricolage Grotesque', sans-serif",
-                        fontWeight: 800,
-                        fontSize: "1.45rem",
-                        color: "#1565C0",
-                        lineHeight: 1,
-                      }}
-                    >
-                      64,37
-                      <span
-                        style={{
-                          fontSize: "0.58rem",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          fontWeight: 600,
-                          marginLeft: 3,
-                          color: "#1565C0",
-                        }}
-                      >
-                        TAHUN
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                Tren Angka Harapan Hidup
+              </span>
             </div>
 
-            {/* RIGHT — Chart */}
+            {/* 2-col grid */}
             <div
               style={{
-                ...reveal(0.15),
-                display: "flex",
-                flexDirection: "column",
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+                gap: "clamp(2rem,5vw,4rem)",
+                alignItems: "center",
               }}
             >
+              {/* LEFT */}
               <div
                 style={{
-                  background: "rgba(197, 237, 234, 0.55)",
-                  borderRadius: 20,
-                  padding: "16px 24px 20px",
-                  flex: 1,
                   display: "flex",
                   flexDirection: "column",
-                  boxShadow: "0 2px 16px rgba(0,80,60,0.07)",
+                  justifyContent: "center",
                 }}
               >
-                <div style={{ textAlign: "center", marginBottom: "0.3rem" }}>
-                  <img
-                    src="/images/bunga4.png"
-                    alt=""
-                    aria-hidden="true"
-                    className="float-spin"
-                    style={{
-                      width: "clamp(60px,9vw,100px)",
-                      objectFit: "contain",
-                      display: "inline-block",
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontSize: "0.68rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase" as const,
-                    color: "#2C3E35",
-                    textAlign: "center",
-                    marginBottom: "0.4rem",
-                  }}
-                >
-                  AHH Sulbar Menurut Jenis Kelamin (2018–2024)
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "1.4rem",
-                    marginBottom: "0.8rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {[
-                    { color: "#2DD4BF", label: "Perempuan", dashed: false },
-                    { color: "#DB6058", label: "Laki-laki", dashed: true },
-                  ].map((item) => (
+                <div style={reveal(0.12)}>
+                  <h2 style={{ margin: "0 0 1rem", lineHeight: 1.15 }}>
                     <span
-                      key={item.label}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: "0.6rem",
-                        fontWeight: 600,
-                        color: "#64748b",
+                        fontFamily: "'Bricolage Grotesque', serif",
+                        fontWeight: 800,
+                        fontSize: "clamp(1.6rem, 3.2vw, 2.6rem)",
+                        color: "#DB6058",
+                        display: "block",
                       }}
                     >
-                      <svg width="22" height="10">
-                        <line
-                          x1="0"
-                          y1="5"
-                          x2="22"
-                          y2="5"
-                          stroke={item.color}
-                          strokeWidth="2.5"
-                          strokeDasharray={item.dashed ? "5 3" : undefined}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      {item.label}
+                      Tren AHH Sulbar
                     </span>
-                  ))}
+                    <span
+                      style={{
+                        fontFamily: "'Lora', sans-serif",
+                        fontStyle: "italic",
+                        fontWeight: 800,
+                        fontSize: "clamp(1.1rem, 2.2vw, 1.8rem)",
+                        color: "#0C2726",
+                        display: "block",
+                      }}
+                    >
+                      menurut jenis kelamin
+                    </span>
+                  </h2>
                 </div>
-                <svg
-                  viewBox={`0 0 ${W} ${H}`}
+                <div style={reveal(0.2)}>
+                  <p
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: "clamp(0.82rem, 1.3vw, 0.96rem)",
+                      fontWeight: 500,
+                      color: "#1a3a32",
+                      lineHeight: 1.85,
+                      margin: "0 0 1.6rem",
+                    }}
+                  >
+                    <strong
+                      style={{
+                        fontWeight: 700,
+                        backgroundColor: "#FFDA8C",
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      AHH perempuan
+                    </strong>{" "}
+                    di Sulbar secara{" "}
+                    <strong
+                      style={{
+                        fontWeight: 700,
+                        backgroundColor: "#FFDA8C",
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      konsisten lebih tinggi
+                    </strong>{" "}
+                    dibandingkan{" "}
+                    <strong
+                      style={{
+                        fontWeight: 700,
+                        backgroundColor: "#FFDA8C",
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      laki-laki
+                    </strong>{" "}
+                    — sesuai pola nasional. Namun keduanya masih berada{" "}
+                    <strong
+                      style={{
+                        fontWeight: 700,
+                        backgroundColor: "#FFDBDD",
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      di bawah rata-rata nasional,
+                    </strong>{" "}
+                    mencerminkan tantangan sistemik yang belum teratasi.
+                  </p>
+                </div>
+                <div
                   style={{
-                    width: "100%",
-                    height: "auto",
-                    flex: 1,
-                    overflow: "visible",
+                    ...reveal(0.3),
+                    display: "flex",
+                    gap: "0.9rem",
+                    flexWrap: "wrap",
+                    marginTop: "0.4rem",
                   }}
                 >
-                  {yTicks.map((v) => (
-                    <g key={v}>
-                      <line
-                        x1={PAD.left}
-                        y1={scaleY(v, minV, maxV)}
-                        x2={W - PAD.right}
-                        y2={scaleY(v, minV, maxV)}
-                        stroke="rgba(0,0,0,0.07)"
-                        strokeWidth={1}
-                      />
+                  {/* Card Perempuan */}
+                  <div
+                    style={{
+                      background: "#FFD6D3",
+                      border: "1.5px solid rgba(255,150,145,0.45)",
+                      borderRadius: 14,
+                      padding: "0.75rem 1rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      boxShadow: "0 4px 18px rgba(219,96,88,0.18)",
+                      minWidth: 170,
+                    }}
+                  >
+                    <img
+                      src="/images/woman.png"
+                      alt="Perempuan"
+                      style={{
+                        width: "clamp(32px,5vw,44px)",
+                        height: "clamp(32px,5vw,44px)",
+                        objectFit: "contain",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontSize: "0.56rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.11em",
+                          textTransform: "uppercase" as const,
+                          color: "#000",
+                          marginBottom: "0.2rem",
+                        }}
+                      >
+                        AHH Perempuan 2024
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Bricolage Grotesque', sans-serif",
+                          fontWeight: 800,
+                          fontSize: "1.45rem",
+                          color: "#C0392B",
+                          lineHeight: 1,
+                        }}
+                      >
+                        68,27
+                        <span
+                          style={{
+                            fontSize: "0.58rem",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontWeight: 600,
+                            marginLeft: 3,
+                            color: "#C0392B",
+                          }}
+                        >
+                          TAHUN
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Card Laki-laki */}
+                  <div
+                    style={{
+                      background: "#C9E9FF",
+                      border: "1.5px solid rgba(100,180,255,0.45)",
+                      borderRadius: 14,
+                      padding: "0.75rem 1rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      boxShadow: "0 4px 18px rgba(60,130,220,0.16)",
+                      minWidth: 170,
+                    }}
+                  >
+                    <img
+                      src="/images/man.png"
+                      alt="Laki-laki"
+                      style={{
+                        width: "clamp(32px,5vw,44px)",
+                        height: "clamp(32px,5vw,44px)",
+                        objectFit: "contain",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div>
+                      <div
+                        style={{
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontSize: "0.56rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.11em",
+                          textTransform: "uppercase" as const,
+                          color: "#000",
+                          marginBottom: "0.2rem",
+                        }}
+                      >
+                        AHH Laki-laki 2024
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "'Bricolage Grotesque', sans-serif",
+                          fontWeight: 800,
+                          fontSize: "1.45rem",
+                          color: "#1565C0",
+                          lineHeight: 1,
+                        }}
+                      >
+                        64,37
+                        <span
+                          style={{
+                            fontSize: "0.58rem",
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                            fontWeight: 600,
+                            marginLeft: 3,
+                            color: "#1565C0",
+                          }}
+                        >
+                          TAHUN
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT — Chart */}
+              <div
+                style={{
+                  ...reveal(0.15),
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div
+                  style={{
+                    background: "rgba(197, 237, 234, 0.55)",
+                    borderRadius: 20,
+                    padding: "16px 24px 20px",
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    boxShadow: "0 2px 16px rgba(0,80,60,0.07)",
+                  }}
+                >
+                  <div style={{ textAlign: "center", marginBottom: "0.3rem" }}>
+                    <img
+                      src="/images/bunga4.png"
+                      alt=""
+                      aria-hidden="true"
+                      className="float-spin"
+                      style={{
+                        width: "clamp(60px,9vw,100px)",
+                        objectFit: "contain",
+                        display: "inline-block",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: "0.68rem",
+                      fontWeight: 800,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase" as const,
+                      color: "#2C3E35",
+                      textAlign: "center",
+                      marginBottom: "0.4rem",
+                    }}
+                  >
+                    AHH Sulbar Menurut Jenis Kelamin (2018–2024)
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: "1.4rem",
+                      marginBottom: "0.8rem",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {[
+                      { color: "#2DD4BF", label: "Perempuan", dashed: false },
+                      { color: "#DB6058", label: "Laki-laki", dashed: true },
+                    ].map((item) => (
+                      <span
+                        key={item.label}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontSize: "0.6rem",
+                          fontWeight: 600,
+                          color: "#64748b",
+                        }}
+                      >
+                        <svg width="22" height="10">
+                          <line
+                            x1="0"
+                            y1="5"
+                            x2="22"
+                            y2="5"
+                            stroke={item.color}
+                            strokeWidth="2.5"
+                            strokeDasharray={item.dashed ? "5 3" : undefined}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        {item.label}
+                      </span>
+                    ))}
+                  </div>
+                  <svg
+                    viewBox={`0 0 ${W} ${H}`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      flex: 1,
+                      overflow: "visible",
+                    }}
+                  >
+                    {yTicks.map((v) => (
+                      <g key={v}>
+                        <line
+                          x1={PAD.left}
+                          y1={scaleY(v, minV, maxV)}
+                          x2={W - PAD.right}
+                          y2={scaleY(v, minV, maxV)}
+                          stroke="rgba(0,0,0,0.07)"
+                          strokeWidth={1}
+                        />
+                        <text
+                          x={PAD.left - 6}
+                          y={scaleY(v, minV, maxV) + 4}
+                          textAnchor="end"
+                          fontSize={8}
+                          fill="#94a3b8"
+                          fontFamily="Plus Jakarta Sans, sans-serif"
+                        >
+                          {v}
+                        </text>
+                      </g>
+                    ))}
+                    {ahhData.map((d, i) => (
                       <text
-                        x={PAD.left - 6}
-                        y={scaleY(v, minV, maxV) + 4}
-                        textAnchor="end"
+                        key={d.year}
+                        x={scaleX(i, ahhData.length)}
+                        y={H - 4}
+                        textAnchor="middle"
                         fontSize={8}
                         fill="#94a3b8"
                         fontFamily="Plus Jakarta Sans, sans-serif"
                       >
-                        {v}
+                        {d.year}
                       </text>
-                    </g>
-                  ))}
-                  {ahhData.map((d, i) => (
-                    <text
-                      key={d.year}
-                      x={scaleX(i, ahhData.length)}
-                      y={H - 4}
-                      textAnchor="middle"
-                      fontSize={8}
-                      fill="#94a3b8"
-                      fontFamily="Plus Jakarta Sans, sans-serif"
-                    >
-                      {d.year}
-                    </text>
-                  ))}
-                  <path
-                    d={prPath}
-                    fill="none"
-                    stroke="#DB6058"
-                    strokeWidth={2.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeDasharray={`${pathLength} ${pathLength}`}
-                    strokeDashoffset={pathLength * (1 - progress)}
-                    style={{ transition: "stroke-dashoffset 0.05s linear" }}
-                  />
-                  <path
-                    d={llPath}
-                    fill="none"
-                    stroke="#2DD4BF"
-                    strokeWidth={2.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeDasharray={`5 3 ${pathLength} ${pathLength}`}
-                    strokeDashoffset={pathLength * (1 - progress)}
-                    style={{ transition: "stroke-dashoffset 0.05s linear" }}
-                  />
-                  {ahhData.map((d, i) => (
-                    <g
-                      key={`dot-${i}`}
-                      opacity={
-                        progress > (i / (ahhData.length - 1)) * 0.85 ? 1 : 0
-                      }
-                      style={{ transition: "opacity 0.3s" }}
-                    >
-                      <circle
-                        cx={scaleX(i, ahhData.length)}
-                        cy={scaleY(d.perempuan, minV, maxV)}
-                        r={3.5}
-                        fill="#DB6058"
-                        stroke="white"
-                        strokeWidth={1.5}
-                      />
-                      <circle
-                        cx={scaleX(i, ahhData.length)}
-                        cy={scaleY(d.lakiLaki, minV, maxV)}
-                        r={3.5}
-                        fill="#2DD4BF"
-                        stroke="white"
-                        strokeWidth={1.5}
-                      />
-                    </g>
-                  ))}
-                </svg>
+                    ))}
+                    <path
+                      d={prPath}
+                      fill="none"
+                      stroke="#DB6058"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray={`${pathLength} ${pathLength}`}
+                      strokeDashoffset={pathLength * (1 - progress)}
+                      style={{ transition: "stroke-dashoffset 0.05s linear" }}
+                    />
+                    <path
+                      d={llPath}
+                      fill="none"
+                      stroke="#2DD4BF"
+                      strokeWidth={2.5}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeDasharray={`5 3 ${pathLength} ${pathLength}`}
+                      strokeDashoffset={pathLength * (1 - progress)}
+                      style={{ transition: "stroke-dashoffset 0.05s linear" }}
+                    />
+                    {ahhData.map((d, i) => (
+                      <g
+                        key={`dot-${i}`}
+                        opacity={
+                          progress > (i / (ahhData.length - 1)) * 0.85 ? 1 : 0
+                        }
+                        style={{ transition: "opacity 0.3s" }}
+                      >
+                        <circle
+                          cx={scaleX(i, ahhData.length)}
+                          cy={scaleY(d.perempuan, minV, maxV)}
+                          r={3.5}
+                          fill="#DB6058"
+                          stroke="white"
+                          strokeWidth={1.5}
+                        />
+                        <circle
+                          cx={scaleX(i, ahhData.length)}
+                          cy={scaleY(d.lakiLaki, minV, maxV)}
+                          r={3.5}
+                          fill="#2DD4BF"
+                          stroke="white"
+                          strokeWidth={1.5}
+                        />
+                      </g>
+                    ))}
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+        {/* Strip bawah — warna #effaf8 solid di tepi paling bawah section */}
+        // Strip bawah — ganti #effaf8 → #f4fefd
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "18vh",
+            background: "linear-gradient(to bottom, transparent, #f4fefd)", // ← ubah di sini
+            pointerEvents: "none",
+          }}
+        />
+      </div>
 
       {/*
-       * TAIL ZONE — 150vh ruang kosong
-       * Tidak ada background → globe (position:fixed, zIndex:0) terlihat
-       * Section di atas sticky dan fade saat user scroll di sini
+       * TAIL ZONE — 220vh ruang scroll setelah fade selesai.
+       * Transparan — globe (zIndex:0) terlihat dari bawah.
+       * Warna globe background di MapContext sudah disetel ke #f3fdfc
+       * sehingga match saat crossfade selesai.
        */}
-      <div style={{ height: "150vh" }} />
+      <div style={{ height: "220vh" }} />
     </div>
   );
 }

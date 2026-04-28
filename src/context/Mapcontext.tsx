@@ -72,108 +72,32 @@ export function MapProvider({ children }: { children: ReactNode }) {
     mapRef.current.on("load", () => {
       const m = mapRef.current!;
 
-      // Fog menggunakan warna solid (bukan CSS gradient)
+      // Fog warna disesuaikan dengan palet #effaf8 / #eef9f6
+      // agar globe blend seamless dengan background LifeExpectancySection
       m.setFog({
-        color: "rgb(245, 255, 254)", // #F5FFFE
-        "high-color": "rgb(184, 255, 231)", // #B8FFE7
-        "horizon-blend": 0.05,
-        "space-color": "rgb(245, 255, 254)",
+        color: "rgb(238, 249, 246)",        // #eef9f6 — horizon/ground fog
+        "high-color": "rgb(213, 245, 238)", // #d5f5ee — upper atmosphere
+        "horizon-blend": 0.08,
+        "space-color": "rgb(239, 250, 248)", // #effaf8 — space background
         "star-intensity": 0,
       });
 
-      // ── highlight tertinggi / terendah ────────────────────────
-      m.addSource("highlight-red", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      m.addSource("highlight-yellow", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
+      m.addSource("highlight-red", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addSource("highlight-yellow", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addLayer({ id: "fill-red", type: "fill", source: "highlight-red", paint: { "fill-color": "#FFEA4F", "fill-opacity": 1 } });
+      m.addLayer({ id: "line-red", type: "line", source: "highlight-red", paint: { "line-color": "#EFB718", "line-width": 2.5 } });
+      m.addLayer({ id: "fill-yellow", type: "fill", source: "highlight-yellow", paint: { "fill-color": "#FF9B4A", "fill-opacity": 1 } });
+      m.addLayer({ id: "line-yellow", type: "line", source: "highlight-yellow", paint: { "line-color": "#DB6058", "line-width": 2.5 } });
 
-      // Tertinggi — oranye (#FF9B4A) border merah (#DB6058)
-      m.addLayer({
-        id: "fill-red",
-        type: "fill",
-        source: "highlight-red",
-        paint: { "fill-color": "#FFEA4F", "fill-opacity": 1 },
-      });
-      m.addLayer({
-        id: "line-red",
-        type: "line",
-        source: "highlight-red",
-        paint: { "line-color": "#EFB718", "line-width": 2.5 },
-      });
-
-      // Terendah — kuning (#FFEA4F) border (#EFB718)
-      m.addLayer({
-        id: "fill-yellow",
-        type: "fill",
-        source: "highlight-yellow",
-        paint: { "fill-color": "#FF9B4A", "fill-opacity": 1 },
-      });
-      m.addLayer({
-        id: "line-yellow",
-        type: "line",
-        source: "highlight-yellow",
-        paint: { "line-color": "#DB6058", "line-width": 2.5 },
-      });
-
-      // ── highlight clustering ──────────────────────────────────
-      m.addSource("cluster-1", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      m.addSource("cluster-2", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      m.addSource("cluster-3", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-
-      // Kluster 1 — Biru (Akses Baik)
-      m.addLayer({
-        id: "fill-cluster-1",
-        type: "fill",
-        source: "cluster-1",
-        paint: { "fill-color": "#3B82F6", "fill-opacity": 1 },
-      });
-      m.addLayer({
-        id: "line-cluster-1",
-        type: "line",
-        source: "cluster-1",
-        paint: { "line-color": "#1D4ED8", "line-width": 2.5 },
-      });
-
-      // Kluster 2 — Kuning (Akses Sedang)
-      m.addLayer({
-        id: "fill-cluster-2",
-        type: "fill",
-        source: "cluster-2",
-        paint: { "fill-color": "#eab308", "fill-opacity": 1 },
-      });
-      m.addLayer({
-        id: "line-cluster-2",
-        type: "line",
-        source: "cluster-2",
-        paint: { "line-color": "#a16207", "line-width": 2.5 },
-      });
-
-      // Kluster 3 — Merah (Akses Rendah)
-      m.addLayer({
-        id: "fill-cluster-3",
-        type: "fill",
-        source: "cluster-3",
-        paint: { "fill-color": "#ef4444", "fill-opacity": 1 },
-      });
-      m.addLayer({
-        id: "line-cluster-3",
-        type: "line",
-        source: "cluster-3",
-        paint: { "line-color": "#991b1b", "line-width": 2.5 },
-      });
+      m.addSource("cluster-1", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addSource("cluster-2", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addSource("cluster-3", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+      m.addLayer({ id: "fill-cluster-1", type: "fill", source: "cluster-1", paint: { "fill-color": "#3B82F6", "fill-opacity": 1 } });
+      m.addLayer({ id: "line-cluster-1", type: "line", source: "cluster-1", paint: { "line-color": "#1D4ED8", "line-width": 2.5 } });
+      m.addLayer({ id: "fill-cluster-2", type: "fill", source: "cluster-2", paint: { "fill-color": "#eab308", "fill-opacity": 1 } });
+      m.addLayer({ id: "line-cluster-2", type: "line", source: "cluster-2", paint: { "line-color": "#a16207", "line-width": 2.5 } });
+      m.addLayer({ id: "fill-cluster-3", type: "fill", source: "cluster-3", paint: { "fill-color": "#ef4444", "fill-opacity": 1 } });
+      m.addLayer({ id: "line-cluster-3", type: "line", source: "cluster-3", paint: { "line-color": "#991b1b", "line-width": 2.5 } });
 
       startGlobeRotation();
       setMapReady(true);
@@ -189,19 +113,21 @@ export function MapProvider({ children }: { children: ReactNode }) {
 
   return (
     <MapCtx.Provider
-      value={{
-        mapRef,
-        mapReady,
-        globeMode,
-        setGlobeMode,
-        stopGlobeRotation,
-        startGlobeRotation,
-        currentBearing,
-        heroScrolling,
-        setHeroScrolling,
-      }}
+      value={{ mapRef, mapReady, globeMode, setGlobeMode, stopGlobeRotation, startGlobeRotation, currentBearing, heroScrolling, setHeroScrolling }}
     >
-      {/* Container peta — background gradient mint */}
+      {/*
+       * Map container — opacity dikontrol LANGSUNG via CSS variable.
+       *
+       * TIDAK ada `transition` di sini karena LifeExpectancySection
+       * sudah menghitung nilai opacity secara per-frame di scroll handler
+       * (smooth via easing function). Menambahkan CSS transition di sini
+       * akan double-ease dan membuat animasi terasa lambat/lag.
+       *
+       * Default opacity: 0 — LifeExpectancySection yang akan men-set
+       * --map-fade-opacity ke nilai yang benar sesuai posisi scroll.
+       * ScrollySection juga bisa override variable ini untuk fade-out
+       * di tail zone-nya.
+       */}
       <div
         ref={containerRef}
         style={{
@@ -211,7 +137,10 @@ export function MapProvider({ children }: { children: ReactNode }) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "none",
-          background: "linear-gradient(to left, #B8FFE7 0%, #F5FFFE 100%)",
+          // Gradasi nyambung dengan background LifeExpectancySection
+          // Gradasi berakhir di #f3fdfc — match dengan warna bawah LifeExpectancySection
+          background: "linear-gradient(160deg, #D4F5EE 0%, #e8faf6 35%, #effaf8 65%, #f3fdfc 100%)",
+          opacity: "var(--map-fade-opacity, 0)" as React.CSSProperties["opacity"],
         }}
       />
       {children}

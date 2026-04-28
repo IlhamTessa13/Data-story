@@ -87,7 +87,7 @@ export default function QuotesSection() {
         style={{
           position: "absolute",
           top: "21%",
-          right: "30px",
+          right: "0px",
           transform: "translateY(-58%)",
           width: "clamp(100px, 17vw, 210px)" /* diperkecil dari 18vw → 14vw */,
           maxHeight: "85%",
