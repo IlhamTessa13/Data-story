@@ -317,9 +317,9 @@ export default function IntroSection() {
               >
                 Sulawesi Barat konsisten menempati posisi bawah
               </strong>{" "}
-              dalam peringkat AHH nasional berdasarkan data BPS ── bersama Papua
+              dalam peringkat AHH nasional berdasarkan data BPS bersama Papua
               Pegunungan dan Papua Selatan. Kondisi ini mencerminkan kesenjangan
-              struktural:
+              struktural, yaitu
               <strong
                 style={{
                   fontWeight: 700,

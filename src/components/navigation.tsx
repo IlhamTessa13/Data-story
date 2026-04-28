@@ -174,6 +174,7 @@ const LINKS = [
   { label: "Tenaga Medis", href: "#tenaga-medis" },
   { label: "Tren AHH", href: "#tren-ahh" },
   { label: "Peta", href: "#peta" },
+  { label: "Kesimpulan", href: "#kesimpulan" }, // ← tambah ini
 ];
 
 const Ham = ({ open }: { open: boolean }) => (

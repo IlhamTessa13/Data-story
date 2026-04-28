@@ -75,47 +75,51 @@ export default function LifeExpectancySection() {
 
   // Scroll-driven crossfade
   useEffect(() => {
-    // Globe tersembunyi saat section ini aktif
     document.documentElement.style.setProperty("--map-fade-opacity", "0");
 
-  const handleScroll = () => {
-    if (!wrapperRef.current || !sectionRef.current) return;
+    const handleScroll = () => {
+      if (!wrapperRef.current || !sectionRef.current) return;
 
-    const wRect = wrapperRef.current.getBoundingClientRect();
-    const sectionH = sectionRef.current.offsetHeight;
-    const vh = window.innerHeight;
-    const scrolled = -wRect.top;
+      const wRect = wrapperRef.current.getBoundingClientRect();
+      const sectionH = sectionRef.current.offsetHeight;
+      const vh = window.innerHeight;
+      const scrolled = -wRect.top;
 
-    // Fade mulai di 1/3 tinggi section, selesai 60vh setelahnya
-    const fadeStart = sectionH * (1 / 3);
-    const fadeEnd = sectionH * (1 / 3) + vh * 0.6;
+      // ─── GUARD: hanya aktif jika section ini yang sedang di-scroll ───
+      // Jika sudah melewati section ini sepenuhnya, jangan override
+      const wrapperBottom = wRect.bottom;
+      if (wrapperBottom < 0) {
+        // Section sudah jauh di atas — biarkan section lain yang control
+        return;
+      }
 
-    let t: number;
-    if (scrolled <= fadeStart) {
-      t = 0;
-    } else if (scrolled >= fadeEnd) {
-      t = 1;
-    } else {
-      t = (scrolled - fadeStart) / (fadeEnd - fadeStart);
-    }
+      const fadeStart = sectionH * (1 / 3);
+      const fadeEnd = sectionH * (1 / 3) + vh * 0.6;
 
-    const eased = easeInOut(t);
+      let t: number;
+      if (scrolled <= fadeStart) {
+        t = 0;
+      } else if (scrolled >= fadeEnd) {
+        t = 1;
+      } else {
+        t = (scrolled - fadeStart) / (fadeEnd - fadeStart);
+      }
 
-    setOverlayOpacity(1 - eased);
+      const eased = easeInOut(t);
+      setOverlayOpacity(1 - eased);
 
-    const globeT = Math.max(0, (t - 0.2) / 0.8);
-    const globeEased = easeInOut(Math.min(1, globeT));
-    document.documentElement.style.setProperty(
-      "--map-fade-opacity",
-      String(globeEased),
-    );
-  };
+      const globeT = Math.max(0, (t - 0.2) / 0.8);
+      const globeEased = easeInOut(Math.min(1, globeT));
+      document.documentElement.style.setProperty(
+        "--map-fade-opacity",
+        String(globeEased),
+      );
+    };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      // Pastikan globe terlihat jika component unmount
       document.documentElement.style.setProperty("--map-fade-opacity", "1");
     };
   }, []);
@@ -185,7 +189,7 @@ export default function LifeExpectancySection() {
             objectFit: "cover",
             objectPosition: "center",
             pointerEvents: "none",
-            opacity: 0.55,
+            opacity: 1,
           }}
         />
         {/* Content */}

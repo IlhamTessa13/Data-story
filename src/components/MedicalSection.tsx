@@ -141,7 +141,7 @@ export default function MedicalSection() {
                 textAlign: "center",
               }}
             >
-              Distribusi Tenaga Medis Per Kabupaten/Kota
+              Distribusi Tenaga Medis Per Kabupaten/Kota tahun 2024
             </div>
 
             <div
@@ -368,7 +368,7 @@ export default function MedicalSection() {
               marginTop: "0.3rem",
             }}
           >
-            total nakes
+            total tenaga medis
             <br />
             Sulbar
           </div>
@@ -385,7 +385,7 @@ export default function MedicalSection() {
               fontWeight: 600,
             }}
           >
-            Sedikit pun kekurangan nakes di daerah terpencil bisa berdampak
+            Sedikit pun kekurangan tenaga medis di daerah terpencil bisa berdampak
             besar pada kualitas dan kecepatan penanganan pasien. Rasio dokter
             terhadap penduduk di Sulbar masih jauh di bawah standar WHO.
           </p>

@@ -13,6 +13,7 @@ import LifeExpectancySection from "./components/LifeExpectancySection";
 import FooterSection from "./components/FooterSection";
 import { storyConfig } from "./data/storyData";
 import ShowSection from "./components/ShowSection";
+import ConclusionSection from "./components/ConclusionSection";
 
 const sectionBg: React.CSSProperties = {
   background: "radial-gradient(ellipse at 100% 50%, #B8FFE7 0%, #F5FFFE 65%)",
@@ -86,11 +87,17 @@ function App() {
           <ScrollySection />
         </section>
 
+        {/* 9. Kesimpulan — zIndex:1 agar globe terlihat saat fade-in berlangsung */}
+        <section id="kesimpulan" style={{ position: "relative", zIndex: 1 }}>
+          <ConclusionSection />
+        </section>
+        
+        {/* 10. Sorotan */}
         <section id="sorotan" style={sectionBg}>
           <ShowSection />
         </section>
 
-        {/* 9. Footer */}
+        {/* 11. Footer */}
         <FooterSection />
       </div>
     </MapProvider>

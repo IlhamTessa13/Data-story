@@ -78,12 +78,16 @@ const STEPS: StepData[] = [
   },
 ];
 
-function fmtVal(v: number, unit: string) {
-  if (unit === "%") return `${v}%`;
-  if (unit === "orang") return `${v} orang`;
-  if (unit === "unit") return `${v} unit`;
-  return `${v} ${unit}`;
-}
+const GLOBE_VIEW = {
+  center: [119.4, -2.5] as [number, number],
+  zoom: 1.8,
+  pitch: 0,
+  bearing: 0,
+};
+
+// ─────────────────────────────────────────
+// Tiny helpers
+// ─────────────────────────────────────────
 
 function injectPopupStyles() {
   if (document.getElementById("sulbar-popup-styles")) return;
@@ -117,6 +121,7 @@ function buildPopupHTML(type: "highest" | "lowest", step: StepData) {
   if (!src) return "";
   return `<img src="${src}" style="width:220px;display:block;border-radius:16px;" />`;
 }
+
 const NARRATIVE_IMAGES: Record<string, string> = {
   bpjs: "/images/cakupanbpjs.png",
   "tenaga-medis": "/images/tenagamedis.png",
@@ -124,45 +129,51 @@ const NARRATIVE_IMAGES: Record<string, string> = {
   clustering: "/images/kluster.png",
 };
 
+// ─────────────────────────────────────────
+// UI Sub-components
+// ─────────────────────────────────────────
+
 function NarrativeBox({
   step,
   visible,
   direction,
+  scrollProgress,
 }: {
   step: StepData;
   index: number;
   visible: boolean;
   direction: number;
+  scrollProgress: number;
 }) {
   const src = NARRATIVE_IMAGES[step.id];
   if (!src) return null;
-
+  const translateY = `${-130 * scrollProgress}%`;
+  const opacity =
+    scrollProgress < 0.7 ? 1 : Math.max(0, 1 - (scrollProgress - 0.7) / 0.3);
   return (
     <AnimatePresence mode="wait" custom={direction}>
       {visible && (
         <motion.div
           key={step.id}
           custom={direction}
-          initial={{ opacity: 0, x: direction >= 0 ? 60 : -60 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction >= 0 ? -60 : 60 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity, y: 0 }}
+          exit={{ opacity: 0, y: -60 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           style={{
             position: "fixed",
             bottom: 32,
             left: 32,
             zIndex: 55,
             width: "min(480px, 42vw)",
+            transform: `translateY(${translateY})`,
+            willChange: "transform, opacity",
           }}
         >
           <img
             src={src}
             alt={step.variableLabel}
-            style={{
-              width: "100%",
-              display: "block",
-              borderRadius: 20,
-            }}
+            style={{ width: "100%", display: "block", borderRadius: 20 }}
           />
         </motion.div>
       )}
@@ -267,13 +278,16 @@ function ZoomOutOverlay({ visible }: { visible: boolean }) {
               letterSpacing: "0.05em",
               textAlign: "center",
             }}
-          >
-          </motion.div>
+          />
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+
+// ─────────────────────────────────────────
+// Main component
+// ─────────────────────────────────────────
 
 export default function ScrollySection() {
   const {
@@ -289,98 +303,90 @@ export default function ScrollySection() {
 
   const geojsonRef = useRef<GeoJSON.FeatureCollection | null>(null);
   const geojsonReady = useRef(false);
-
-  // sectionRef: zona steps scroll (sama seperti sebelumnya)
   const sectionRef = useRef<HTMLDivElement>(null);
-  // wrapperRef: div panjang total termasuk tail globe-fade (seperti LifeExpectancySection)
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const rotateRef = useRef<number | null>(null);
-  const flyAnimRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const currentFlyRef = useRef<{
-    center: [number, number];
-    zoom: number;
-    bearing: number;
-    pitch: number;
-  } | null>(null);
-
-  const isZooming = useRef(false);
-  const hasZoomedIn = useRef(false);
+  // Section slow-rotation RAF
+  const sectionRotateRef = useRef<number | null>(null);
   const rotBearing = useRef(0);
-  const lastStep = useRef(-1);
-  const pendingZoom = useRef(false);
+
+  // FlyTo debounce
+  const flyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Popups
   const popupHighRef = useRef<mapboxgl.Popup | null>(null);
   const popupLowRef = useRef<mapboxgl.Popup | null>(null);
-  const clusterPopupsRef = useRef<mapboxgl.Popup[]>([]);
-  const isResetting = useRef(false);
+
+  // Scroll speed
   const ticking = useRef(false);
+  const lastScrollY = useRef(window.scrollY);
+  const lastScrollTime = useRef(Date.now());
+  const scrollSpeed = useRef(0);
 
-  // Closing zoom-out (setelah kluster)
-  const isZoomingOut = useRef(false);
-  const hasZoomedOut = useRef(false);
-  const [showZoomOutOverlay, setShowZoomOutOverlay] = useState(false);
+  /**
+   * mapStep = the step index the map is currently targeting.
+   * -1 means globe view.
+   * This is the ONLY state that drives navigation — no booleans, no phases.
+   */
+  const mapStep = useRef(-1);
 
-  // Fade berbasis scroll — dipakai setelah globe muncul (tail zone)
-  const [globeFadeOut, setGlobeFadeOut] = useState(1);
-
+  // React render state
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [visible, setVisible] = useState(false);
   const [uiVisible, setUiVisible] = useState(false);
+  const [imageScrollProgress, setImageScrollProgress] = useState(0);
+  const [showZoomOutOverlay, setShowZoomOutOverlay] = useState(false);
 
-  const scrollSpeedRef = useRef(0);
-  const lastScrollY = useRef(0);
-  const lastScrollTime = useRef(Date.now());
-
+  // ── scroll speed tracking ──────────────────────────────
   const updateScrollSpeed = useCallback(() => {
     const now = Date.now();
-    const dy = Math.abs(window.scrollY - lastScrollY.current);
     const dt = now - lastScrollTime.current;
-    scrollSpeedRef.current = dt > 0 ? dy / dt : 0;
+    if (dt > 0)
+      scrollSpeed.current = Math.abs(window.scrollY - lastScrollY.current) / dt;
     lastScrollY.current = window.scrollY;
     lastScrollTime.current = now;
   }, []);
 
   const getFlyDuration = useCallback((base: number) => {
-    const speed = scrollSpeedRef.current;
-    if (speed > 3) return Math.max(400, base * 0.25);
-    if (speed > 1.5) return Math.max(600, base * 0.45);
-    if (speed > 0.5) return Math.max(900, base * 0.65);
+    const s = scrollSpeed.current;
+    if (s > 5) return Math.max(250, base * 0.15);
+    if (s > 3) return Math.max(380, base * 0.25);
+    if (s > 1.5) return Math.max(580, base * 0.42);
+    if (s > 0.5) return Math.max(850, base * 0.62);
     return base;
   }, []);
 
-  useEffect(() => {
-    injectPopupStyles();
-    fetch("/data/sulbar-kabupaten.geojson")
-      .then((r) => r.json())
-      .then((d) => {
-        geojsonRef.current = d;
-        geojsonReady.current = true;
-        if (pendingZoom.current && mapReady && !hasZoomedIn.current) {
-          pendingZoom.current = false;
-          triggerZoomIn(0);
-        }
-      })
-      .catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // ── section rotation ───────────────────────────────────
+  const stopSectionRotation = useCallback(() => {
+    if (sectionRotateRef.current) {
+      cancelAnimationFrame(sectionRotateRef.current);
+      sectionRotateRef.current = null;
+    }
   }, []);
 
-  const removePopups = useCallback(() => {
+  const startSectionRotation = useCallback(
+    (baseBearing: number) => {
+      stopSectionRotation();
+      rotBearing.current = baseBearing;
+      const tick = () => {
+        if (!mapRef.current) return;
+        rotBearing.current += 0.018;
+        mapRef.current.setBearing(rotBearing.current % 360);
+        sectionRotateRef.current = requestAnimationFrame(tick);
+      };
+      sectionRotateRef.current = requestAnimationFrame(tick);
+    },
+    [mapRef, stopSectionRotation],
+  );
+
+  // ── popups & highlights ────────────────────────────────
+  const removeAllPopups = useCallback(() => {
     popupHighRef.current?.remove();
     popupHighRef.current = null;
     popupLowRef.current?.remove();
     popupLowRef.current = null;
   }, []);
-
-  const removeClusterPopups = useCallback(() => {
-    clusterPopupsRef.current.forEach((p) => p.remove());
-    clusterPopupsRef.current = [];
-  }, []);
-
-  const removeAllPopups = useCallback(() => {
-    removePopups();
-    removeClusterPopups();
-  }, [removePopups, removeClusterPopups]);
 
   const clearHighlight = useCallback(() => {
     if (!mapRef.current) return;
@@ -388,122 +394,96 @@ export default function ScrollySection() {
       type: "FeatureCollection",
       features: [],
     };
-    (
-      mapRef.current.getSource("highlight-red") as mapboxgl.GeoJSONSource
-    )?.setData(empty);
-    (
-      mapRef.current.getSource("highlight-yellow") as mapboxgl.GeoJSONSource
-    )?.setData(empty);
-    (mapRef.current.getSource("cluster-1") as mapboxgl.GeoJSONSource)?.setData(
-      empty,
-    );
-    (mapRef.current.getSource("cluster-2") as mapboxgl.GeoJSONSource)?.setData(
-      empty,
-    );
-    (mapRef.current.getSource("cluster-3") as mapboxgl.GeoJSONSource)?.setData(
-      empty,
-    );
-  }, [mapRef]);
-
-  const updateHighlight = useCallback(
-    (highName: string, lowName: string) => {
-      if (!mapRef.current || !geojsonRef.current) return;
-      const get = (n: string) =>
-        geojsonRef.current!.features.filter(
-          (f) => (f.properties as { name: string }).name === n,
-        );
-      (
-        mapRef.current.getSource("highlight-red") as mapboxgl.GeoJSONSource
-      )?.setData({
-        type: "FeatureCollection",
-        features: get(highName),
-      });
-      (
-        mapRef.current.getSource("highlight-yellow") as mapboxgl.GeoJSONSource
-      )?.setData({
-        type: "FeatureCollection",
-        features: get(lowName),
-      });
-    },
-    [mapRef],
-  );
-
-  const updateClusterHighlight = useCallback(() => {
-    if (!mapRef.current || !geojsonRef.current) return;
-    const getFeatures = (names: string[]) =>
-      geojsonRef.current!.features.filter((f) =>
-        names.includes((f.properties as { name: string }).name),
-      );
-    (mapRef.current.getSource("cluster-1") as mapboxgl.GeoJSONSource)?.setData({
-      type: "FeatureCollection",
-      features: getFeatures(CLUSTER_MEMBERS[1]),
-    });
-    (mapRef.current.getSource("cluster-2") as mapboxgl.GeoJSONSource)?.setData({
-      type: "FeatureCollection",
-      features: getFeatures(CLUSTER_MEMBERS[2]),
-    });
-    (mapRef.current.getSource("cluster-3") as mapboxgl.GeoJSONSource)?.setData({
-      type: "FeatureCollection",
-      features: getFeatures(CLUSTER_MEMBERS[3]),
+    [
+      "highlight-red",
+      "highlight-yellow",
+      "cluster-1",
+      "cluster-2",
+      "cluster-3",
+    ].forEach((id) => {
+      (mapRef.current!.getSource(id) as mapboxgl.GeoJSONSource)?.setData(empty);
     });
   }, [mapRef]);
 
-  const showPopups = useCallback(
+  const applyStepVisuals = useCallback(
     (step: StepData) => {
-      if (!mapRef.current || step.isClustering) return;
-      removePopups();
-      const hCoord = CENTROIDS[step.highest.name];
-      const lCoord = CENTROIDS[step.lowest.name];
-      if (!hCoord || !lCoord) return;
-      popupHighRef.current = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        anchor: "bottom",
-        offset: [0, -4],
-        className: "ntt-popup",
-        maxWidth: "none",
-      })
-        .setLngLat(hCoord)
-        .setHTML(buildPopupHTML("highest", step))
-        .addTo(mapRef.current);
-      popupLowRef.current = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        anchor: "bottom",
-        offset: [0, -4],
-        className: "ntt-popup",
-        maxWidth: "none",
-      })
-        .setLngLat(lCoord)
-        .setHTML(buildPopupHTML("lowest", step))
-        .addTo(mapRef.current);
+      if (!mapRef.current || !geojsonRef.current) return;
+
+      // Clear previous
+      clearHighlight();
+      removeAllPopups();
+
+      if (step.isClustering) {
+        const getF = (names: string[]) => ({
+          type: "FeatureCollection" as const,
+          features: geojsonRef.current!.features.filter((f) =>
+            names.includes((f.properties as { name: string }).name),
+          ),
+        });
+        (
+          mapRef.current.getSource("cluster-1") as mapboxgl.GeoJSONSource
+        )?.setData(getF(CLUSTER_MEMBERS[1]));
+        (
+          mapRef.current.getSource("cluster-2") as mapboxgl.GeoJSONSource
+        )?.setData(getF(CLUSTER_MEMBERS[2]));
+        (
+          mapRef.current.getSource("cluster-3") as mapboxgl.GeoJSONSource
+        )?.setData(getF(CLUSTER_MEMBERS[3]));
+      } else {
+        const get = (n: string) => ({
+          type: "FeatureCollection" as const,
+          features: geojsonRef.current!.features.filter(
+            (f) => (f.properties as { name: string }).name === n,
+          ),
+        });
+        (
+          mapRef.current.getSource("highlight-red") as mapboxgl.GeoJSONSource
+        )?.setData(get(step.highest.name));
+        (
+          mapRef.current.getSource("highlight-yellow") as mapboxgl.GeoJSONSource
+        )?.setData(get(step.lowest.name));
+
+        // Popups
+        const hCoord = CENTROIDS[step.highest.name];
+        const lCoord = CENTROIDS[step.lowest.name];
+        if (hCoord) {
+          popupHighRef.current = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            anchor: "bottom",
+            offset: [0, -4],
+            className: "ntt-popup",
+            maxWidth: "none",
+          })
+            .setLngLat(hCoord)
+            .setHTML(buildPopupHTML("highest", step))
+            .addTo(mapRef.current);
+        }
+        if (lCoord) {
+          popupLowRef.current = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            anchor: "bottom",
+            offset: [0, -4],
+            className: "ntt-popup",
+            maxWidth: "none",
+          })
+            .setLngLat(lCoord)
+            .setHTML(buildPopupHTML("lowest", step))
+            .addTo(mapRef.current);
+        }
+      }
     },
-    [mapRef, removePopups],
+    [mapRef, clearHighlight, removeAllPopups],
   );
 
-  const stopSectionRotation = useCallback(() => {
-    if (rotateRef.current) {
-      cancelAnimationFrame(rotateRef.current);
-      rotateRef.current = null;
-    }
-  }, []);
-
-  const startSectionRotation = useCallback(
-    (base: number) => {
-      stopSectionRotation();
-      rotBearing.current = base;
-      const tick = () => {
-        if (!mapRef.current) return;
-        rotBearing.current += 0.018;
-        mapRef.current.setBearing(rotBearing.current % 360);
-        rotateRef.current = requestAnimationFrame(tick);
-      };
-      rotateRef.current = requestAnimationFrame(tick);
-    },
-    [mapRef, stopSectionRotation],
-  );
-
-  const smoothFlyTo = useCallback(
+  // ── core flyTo ─────────────────────────────────────────
+  /**
+   * Always interrupts current animation and flies to new target.
+   * 16 ms debounce collapses burst scroll events into one call per frame.
+   * onEnd fires only if this flyTo wasn't superseded.
+   */
+  const doFlyTo = useCallback(
     (
       target: {
         center: [number, number];
@@ -515,331 +495,205 @@ export default function ScrollySection() {
       onEnd?: () => void,
     ) => {
       if (!mapRef.current) return;
-      stopSectionRotation();
+
+      // Immediately stop — this makes the map "ready" for a new instruction
       mapRef.current.stop();
-      if (flyAnimRef.current) clearTimeout(flyAnimRef.current);
-      currentFlyRef.current = target;
+      stopSectionRotation();
+
+      if (flyDebounceRef.current) clearTimeout(flyDebounceRef.current);
+
       const duration = getFlyDuration(baseDuration);
-      mapRef.current.flyTo({
-        center: target.center,
-        zoom: target.zoom,
-        bearing: target.bearing,
-        pitch: target.pitch,
-        duration,
-        easing: (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
-      });
-      const handleMoveEnd = () => {
-        if (currentFlyRef.current === target) onEnd?.();
-      };
-      mapRef.current.once("moveend", handleMoveEnd);
+      const token = target; // identity check for onEnd guard
+
+      flyDebounceRef.current = setTimeout(() => {
+        if (!mapRef.current) return;
+        mapRef.current.stop(); // stop again in case something else started
+
+        mapRef.current.flyTo({
+          center: token.center,
+          zoom: token.zoom,
+          bearing: token.bearing,
+          pitch: token.pitch,
+          duration,
+          easing: (t: number) => 1 - Math.pow(1 - t, 3),
+        });
+
+        if (onEnd) {
+          mapRef.current.once("moveend", () => {
+            if (token === target) onEnd();
+          });
+        }
+      }, 16);
     },
     [mapRef, stopSectionRotation, getFlyDuration],
   );
 
-  // ── Reset ke globe saat scroll ke atas (keluar section) ──
-  const resetToGlobe = useCallback(() => {
-    if (!mapRef.current || isResetting.current || isZoomingOut.current) return;
-    isResetting.current = true;
-    isZoomingOut.current = true;
-    stopSectionRotation();
-    stopGlobeRotation();
-    removeAllPopups();
-    clearHighlight();
-    setUiVisible(false);
-    setGlobeMode(true);
-    setGlobeFadeOut(1);
-
-    const dur = getFlyDuration(2200);
-    mapRef.current.stop();
-    mapRef.current.flyTo({
-      center: [119.4, -2.5],
-      zoom: 1.8,
-      pitch: 0,
-      bearing: currentBearing() % 360,
-      duration: dur,
-      easing: (t) => t * (2 - t),
-    });
-
-    mapRef.current.once("moveend", () => {
-      isResetting.current = false;
-      isZoomingOut.current = false;
-      hasZoomedIn.current = false;
-      hasZoomedOut.current = false;
-      isZooming.current = false;
-      lastStep.current = -1;
-      setActiveStep(0);
-      startGlobeRotation();
-    });
-  }, [
-    mapRef,
-    stopSectionRotation,
-    stopGlobeRotation,
-    removeAllPopups,
-    clearHighlight,
-    setGlobeMode,
-    currentBearing,
-    startGlobeRotation,
-    getFlyDuration,
-  ]);
-
-  // ── Closing zoom-out setelah step terakhir (kluster) ──
-  // Globe muncil kecil, berputar, lalu fade saat scroll lanjut ke conclusion
-  const triggerClosingZoomOut = useCallback(() => {
-    if (!mapRef.current || isZoomingOut.current || hasZoomedOut.current) return;
-    isZoomingOut.current = true;
-    hasZoomedOut.current = true;
-
-    stopSectionRotation();
-    removeAllPopups();
-    clearHighlight();
-    setUiVisible(false);
-    setShowZoomOutOverlay(true);
-
-    const dur = getFlyDuration(2400);
-    mapRef.current.stop();
-    mapRef.current.flyTo({
-      center: [119.4, -2.5],
-      zoom: 1.8,
-      pitch: 0,
-      bearing: currentBearing() % 360,
-      duration: dur,
-      easing: (t) => t * (2 - t),
-    });
-
-    mapRef.current.once("moveend", () => {
-      setShowZoomOutOverlay(false);
-      isZoomingOut.current = false;
-      setGlobeMode(true);
-      // Globe berputar pelan saat user scroll menuju conclusion
-      startGlobeRotation();
-    });
-  }, [
-    mapRef,
-    stopSectionRotation,
-    removeAllPopups,
-    clearHighlight,
-    setGlobeMode,
-    currentBearing,
-    startGlobeRotation,
-    getFlyDuration,
-  ]);
-
-  const triggerZoomIn = useCallback(
-    (stepIdx: number) => {
-      if (!mapRef.current || isZooming.current || hasZoomedIn.current) return;
-      isZooming.current = true;
-      stopGlobeRotation();
-      clearHighlight();
-      removeAllPopups();
-
-      const step = STEPS[stepIdx];
-      smoothFlyTo(step.flyTo, 3800, () => {
-        hasZoomedIn.current = true;
-        isZooming.current = false;
-        lastStep.current = stepIdx;
-        hasZoomedOut.current = false;
-        setGlobeMode(false);
-        setTimeout(() => {
-          if (!step.isClustering) {
-            updateHighlight(step.highest.name, step.lowest.name);
-            showPopups(step);
-          } else {
-            updateClusterHighlight();
-          }
-          setUiVisible(true);
-          startSectionRotation(step.flyTo.bearing);
-        }, 200);
-      });
-    },
-    [
-      mapRef,
-      stopGlobeRotation,
-      clearHighlight,
-      removeAllPopups,
-      smoothFlyTo,
-      setGlobeMode,
-      updateHighlight,
-      showPopups,
-      updateClusterHighlight,
-      startSectionRotation,
-    ],
-  );
-
-  const goToStep = useCallback(
-    (idx: number) => {
+  // ── navigate ───────────────────────────────────────────
+  /**
+   * Single navigation entry point.
+   * targetStep: -1 = globe, 0-3 = data step
+   *
+   * Works identically for forward AND backward scroll.
+   * No phase checks, no booleans to get out of sync.
+   */
+  const navigateTo = useCallback(
+    (targetStep: number) => {
       if (!mapRef.current || !mapReady) return;
-      if (idx === lastStep.current) return;
+      if (targetStep === mapStep.current) return; // already targeting this
 
-      const prevStep = lastStep.current;
-      setDirection(idx > prevStep ? 1 : -1);
-      lastStep.current = idx;
+      const prev = mapStep.current;
+      mapStep.current = targetStep;
 
-      const step = STEPS[idx];
-      removeAllPopups();
-      clearHighlight();
+      setDirection(targetStep > prev ? 1 : -1);
 
-      // Jika kembali ke step dari zona tail, reset flag zoom-out
-      hasZoomedOut.current = false;
-      isZoomingOut.current = false;
+      if (targetStep === -1) {
+        // ── Back to globe ──
+        stopGlobeRotation();
+        clearHighlight();
+        removeAllPopups();
+        setUiVisible(false);
+        setGlobeMode(true);
 
-      smoothFlyTo(step.flyTo, 2200, () => {
-        if (lastStep.current !== idx) return;
-        if (step.isClustering) {
-          updateClusterHighlight();
-        } else {
-          updateHighlight(step.highest.name, step.lowest.name);
-          showPopups(step);
-        }
-        startSectionRotation(step.flyTo.bearing);
-      });
+        doFlyTo(
+          { ...GLOBE_VIEW, bearing: currentBearing() % 360 },
+          2200,
+          () => {
+            if (mapStep.current !== -1) return;
+            startGlobeRotation();
+          },
+        );
+      } else {
+        // ── Data step ──
+        const step = STEPS[targetStep];
+        stopGlobeRotation();
+        setGlobeMode(false);
+        setUiVisible(true);
+
+        // Longer duration only for the very first zoom-in from globe
+        const baseDur = prev === -1 ? 3800 : 2000;
+
+        doFlyTo(step.flyTo, baseDur, () => {
+          if (mapStep.current !== targetStep) return;
+          applyStepVisuals(step);
+          startSectionRotation(step.flyTo.bearing);
+        });
+      }
     },
     [
       mapRef,
       mapReady,
-      removeAllPopups,
+      stopGlobeRotation,
       clearHighlight,
-      smoothFlyTo,
-      updateHighlight,
-      showPopups,
-      updateClusterHighlight,
+      removeAllPopups,
+      setGlobeMode,
+      currentBearing,
+      startGlobeRotation,
+      doFlyTo,
+      applyStepVisuals,
       startSectionRotation,
     ],
   );
 
+  // ── GeoJSON fetch ──────────────────────────────────────
   useEffect(() => {
-    if (!visible) {
-      removeAllPopups();
-      clearHighlight();
-      setUiVisible(false);
-    }
-  }, [visible, removeAllPopups, clearHighlight]);
-
-  // ── Fade-out scroll: berjalan di "tail" zone setelah globe muncul ──
-  // Mirip LifeExpectancySection: fade terjadi saat user scroll dari zona globe ke conclusion
-  useEffect(() => {
-    const handleFadeScroll = () => {
-      if (!wrapperRef.current) return;
-
-      // Hanya aktif saat globe sudah zoom-out
-      if (!hasZoomedOut.current) {
-        setGlobeFadeOut(1);
-        return;
-      }
-
-      const rect = wrapperRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const wrapperH = wrapperRef.current.offsetHeight;
-
-      const scrolled = -rect.top; // berapa px sudah di-scroll dalam wrapper
-      // Zona steps berakhir di (STEPS.length + 1.5) * vh
-      const stepsZoneH = (STEPS.length + 1.5) * vh;
-      // Tail zone: dari akhir steps sampai akhir wrapper
-      // Fade mulai saat globe sudah keluar (sedikit setelah stepsZoneH)
-      const fadeStart = stepsZoneH;
-      const fadeEnd = wrapperH - vh * 0.8; // selesai fade sebelum conclusion muncul
-
-      if (scrolled < fadeStart) {
-        setGlobeFadeOut(1);
-        return;
-      }
-
-      const raw = (scrolled - fadeStart) / (fadeEnd - fadeStart);
-      const opacity = Math.max(0, Math.min(1, 1 - raw));
-      setGlobeFadeOut(opacity);
-    };
-
-    window.addEventListener("scroll", handleFadeScroll, { passive: true });
-    handleFadeScroll();
-    return () => window.removeEventListener("scroll", handleFadeScroll);
+    injectPopupStyles();
+    fetch("/data/sulbar-kabupaten.geojson")
+      .then((r) => r.json())
+      .then((d) => {
+        geojsonRef.current = d;
+        geojsonReady.current = true;
+      })
+      .catch(console.error);
   }, []);
 
-  // ── Terapkan opacity ke elemen map container via CSS variable ──
-  // MapContainer harus membaca var(--map-fade-opacity) dan terapkan ke wrapper-nya
+  // ── Main scroll driver ─────────────────────────────────
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--map-fade-opacity",
-      String(globeFadeOut),
-    );
-  }, [globeFadeOut]);
-
-  // ── Main scroll logic ──
-  useEffect(() => {
-    const handleScrollLogic = () => {
+    const run = () => {
       updateScrollSpeed();
-
       if (!sectionRef.current) return;
+
       const rect = sectionRef.current.getBoundingClientRect();
       const vh = window.innerHeight;
       const inView = rect.top < vh * 0.7 && rect.bottom > vh * 0.3;
       setVisible(inView);
 
-      // Scroll ke atas → reset globe
-      if (rect.top > vh * 0.4) {
-        if (hasZoomedIn.current && !isResetting.current) resetToGlobe();
-        return;
-      }
-      if (!inView) return;
-
-      // Zoom in pertama kali
-      if (!hasZoomedIn.current) {
-        if (mapReady && !isZooming.current && !heroScrolling) {
-          if (geojsonReady.current) triggerZoomIn(0);
-          else pendingZoom.current = true;
+      // ── Above the section → globe ──────────────────────
+      if (rect.top > vh * 0.35) {
+        if (mapStep.current !== -1) {
+          setImageScrollProgress(0);
+          setShowZoomOutOverlay(false);
+          navigateTo(-1);
         }
         return;
       }
 
-      // Progress scroll → step
-      const scrolled = -rect.top;
-      const total = sectionRef.current.offsetHeight - vh;
-      const rawProgress = Math.max(0, scrolled / total);
+      if (!inView || !mapReady || !geojsonReady.current || heroScrolling)
+        return;
 
-      // Melewati semua steps → trigger closing zoom-out ke globe
+      // ── Compute progress inside the section ────────────
+      const scrolled = Math.max(0, -rect.top);
+      const totalH = sectionRef.current.offsetHeight - vh;
+      const rawProgress = totalH > 0 ? scrolled / totalH : 0;
+
+      // ── Tail zone (past all steps) ─────────────────────
       if (rawProgress >= 1) {
-        if (!hasZoomedOut.current && !isZoomingOut.current) {
-          triggerClosingZoomOut();
+        const lastIdx = STEPS.length - 1;
+        if (activeStep !== lastIdx) setActiveStep(lastIdx);
+        setImageScrollProgress(1);
+
+        // If we haven't gone to globe yet after the last step, do it now
+        if (mapStep.current === lastIdx) {
+          setShowZoomOutOverlay(true);
+          setTimeout(() => setShowZoomOutOverlay(false), 1200);
+          navigateTo(-1);
         }
-        // Tetap tampilkan step terakhir
-        const lastStepIdx = STEPS.length - 1;
-        if (activeStep !== lastStepIdx) setActiveStep(lastStepIdx);
         return;
       }
 
-      const progress = Math.min(0.999, rawProgress);
-      const stepIdx = Math.min(
+      // ── Inside steps zone ──────────────────────────────
+      const clampedP = Math.min(0.9999, rawProgress);
+      const targetIdx = Math.min(
         STEPS.length - 1,
-        Math.floor(progress * STEPS.length),
+        Math.floor(clampedP * STEPS.length),
       );
 
-      if (stepIdx !== activeStep) {
-        setActiveStep(stepIdx);
-        goToStep(stepIdx);
+      // Per-step parallax progress
+      const perStep = 1 / STEPS.length;
+      const localP = (clampedP % perStep) / perStep;
+      setImageScrollProgress(Math.min(1, localP));
+
+      if (targetIdx !== activeStep) {
+        setActiveStep(targetIdx);
+        setImageScrollProgress(0);
       }
+
+      // This is the key: call navigateTo unconditionally based on scroll position.
+      // navigateTo guards against same-step calls, so it's safe.
+      navigateTo(targetIdx);
     };
 
     const onScroll = () => {
       if (ticking.current) return;
       ticking.current = true;
       requestAnimationFrame(() => {
-        handleScrollLogic();
         ticking.current = false;
+        run();
       });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    handleScrollLogic();
+    run(); // initial run
     return () => window.removeEventListener("scroll", onScroll);
-  }, [
-    activeStep,
-    goToStep,
-    mapReady,
-    triggerZoomIn,
-    triggerClosingZoomOut,
-    resetToGlobe,
-    heroScrolling,
-    updateScrollSpeed,
-  ]);
+  }, [activeStep, mapReady, heroScrolling, updateScrollSpeed, navigateTo]);
 
+  // ── Sync map opacity ───────────────────────────────────
+  useEffect(() => {
+    if (visible && !globeMode) {
+      document.documentElement.style.setProperty("--map-fade-opacity", "1");
+    }
+  }, [visible, globeMode]);
+
+  // ── Cleanup ────────────────────────────────────────────
   useEffect(
     () => () => {
       removeAllPopups();
@@ -848,6 +702,7 @@ export default function ScrollySection() {
     [removeAllPopups, stopSectionRotation],
   );
 
+  // ── Render ─────────────────────────────────────────────
   return (
     <>
       <ScrollHint visible={visible && globeMode && !heroScrolling} />
@@ -860,30 +715,21 @@ export default function ScrollySection() {
             index={activeStep}
             visible
             direction={direction}
+            scrollProgress={imageScrollProgress}
           />
           <ProgressDots total={STEPS.length} current={activeStep} />
         </>
       )}
 
-      {/*
-        Struktur wrapper dua lapis (seperti LifeExpectancySection):
-        - wrapperRef: div panjang total, mencakup steps + tail fade zone
-        - sectionRef (di dalam): hanya zona steps, untuk logic scroll step
-
-        Tail zone = extra 2.5 * 100vh setelah steps selesai
-        Di zona ini globe berputar, lalu perlahan fade ke conclusion
-      */}
       <div
         ref={wrapperRef}
         style={{
           position: "relative",
-          // Steps zone + tail zone (globe putar + fade ke conclusion)
-          height: `${(STEPS.length + 1.5 + 2.5) * 100}vh`,
+          height: `${(STEPS.length + 1.5) * 100}vh`,
           zIndex: 10,
           pointerEvents: "none",
         }}
       >
-        {/* sectionRef: hanya zona steps untuk kalkulasi progress */}
         <div
           ref={sectionRef}
           style={{

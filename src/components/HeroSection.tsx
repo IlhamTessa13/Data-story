@@ -210,7 +210,7 @@ export default function HeroSection() {
             >
               66,27 tahun
             </span>{" "}
-            — terpaut hampir delapan tahun di bawah rata-rata nasional. Angka ini
+            , terpaut hampir delapan tahun di bawah rata-rata nasional. Angka ini
             bukan takdir. Ini adalah cerminan sebuah sistem yang belum bekerja.
           </p>
         </motion.div>

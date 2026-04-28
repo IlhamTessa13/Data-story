@@ -367,8 +367,7 @@ export default function BpjsSection() {
               >
                 kehadiran JKN efektif menghapus batasan ekonomi
               </strong>{" "}
-              tersebut, di mana akses layanan yang lebih luas terbukti secara
-              riset berperan penting dalam{" "}
+              tersebut, di mana akses layanan yang lebih luas berperan penting dalam{" "}
               <strong
                 style={{
                   fontWeight: 700,
@@ -467,7 +466,7 @@ export default function BpjsSection() {
           >
             Persentase Penduduk Sulawesi Barat
             <br />
-            yang Memiliki Jaminan Kesehatan
+            yang Memiliki Jaminan Kesehatan Tahun 2024
           </div>
           <div style={{ width: "min(420px,100%)" }}>
             <DonutChart hovered={hovered} setHovered={setHovered} />

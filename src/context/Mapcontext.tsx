@@ -75,29 +75,94 @@ export function MapProvider({ children }: { children: ReactNode }) {
       // Fog warna disesuaikan dengan palet #effaf8 / #eef9f6
       // agar globe blend seamless dengan background LifeExpectancySection
       m.setFog({
-        color: "rgb(238, 249, 246)",        // #eef9f6 — horizon/ground fog
-        "high-color": "rgb(213, 245, 238)", // #d5f5ee — upper atmosphere
-        "horizon-blend": 0.08,
-        "space-color": "rgb(239, 250, 248)", // #effaf8 — space background
-        "star-intensity": 0,
+        color: "rgb(8, 8, 24)", // gelap navy — horizon
+        "high-color": "rgb(4, 4, 16)", // sangat gelap — upper atmosphere
+        "horizon-blend": 0.06,
+        "space-color": "rgb(2, 2, 10)", // hampir hitam — luar angkasa
+        "star-intensity": 0.6, // bintang terlihat
       });
 
-      m.addSource("highlight-red", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addSource("highlight-yellow", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addLayer({ id: "fill-red", type: "fill", source: "highlight-red", paint: { "fill-color": "#FFEA4F", "fill-opacity": 1 } });
-      m.addLayer({ id: "line-red", type: "line", source: "highlight-red", paint: { "line-color": "#EFB718", "line-width": 2.5 } });
-      m.addLayer({ id: "fill-yellow", type: "fill", source: "highlight-yellow", paint: { "fill-color": "#FF9B4A", "fill-opacity": 1 } });
-      m.addLayer({ id: "line-yellow", type: "line", source: "highlight-yellow", paint: { "line-color": "#DB6058", "line-width": 2.5 } });
+      m.addSource("highlight-red", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addSource("highlight-yellow", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addLayer({
+        id: "fill-red",
+        type: "fill",
+        source: "highlight-red",
+        paint: { "fill-color": "#FFEA4F", "fill-opacity": 1 },
+      });
+      m.addLayer({
+        id: "line-red",
+        type: "line",
+        source: "highlight-red",
+        paint: { "line-color": "#EFB718", "line-width": 2.5 },
+      });
+      m.addLayer({
+        id: "fill-yellow",
+        type: "fill",
+        source: "highlight-yellow",
+        paint: { "fill-color": "#FF9B4A", "fill-opacity": 1 },
+      });
+      m.addLayer({
+        id: "line-yellow",
+        type: "line",
+        source: "highlight-yellow",
+        paint: { "line-color": "#DB6058", "line-width": 2.5 },
+      });
 
-      m.addSource("cluster-1", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addSource("cluster-2", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addSource("cluster-3", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addLayer({ id: "fill-cluster-1", type: "fill", source: "cluster-1", paint: { "fill-color": "#3B82F6", "fill-opacity": 1 } });
-      m.addLayer({ id: "line-cluster-1", type: "line", source: "cluster-1", paint: { "line-color": "#1D4ED8", "line-width": 2.5 } });
-      m.addLayer({ id: "fill-cluster-2", type: "fill", source: "cluster-2", paint: { "fill-color": "#eab308", "fill-opacity": 1 } });
-      m.addLayer({ id: "line-cluster-2", type: "line", source: "cluster-2", paint: { "line-color": "#a16207", "line-width": 2.5 } });
-      m.addLayer({ id: "fill-cluster-3", type: "fill", source: "cluster-3", paint: { "fill-color": "#ef4444", "fill-opacity": 1 } });
-      m.addLayer({ id: "line-cluster-3", type: "line", source: "cluster-3", paint: { "line-color": "#991b1b", "line-width": 2.5 } });
+      m.addSource("cluster-1", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addSource("cluster-2", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addSource("cluster-3", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      m.addLayer({
+        id: "fill-cluster-1",
+        type: "fill",
+        source: "cluster-1",
+        paint: { "fill-color": "#3B82F6", "fill-opacity": 1 },
+      });
+      m.addLayer({
+        id: "line-cluster-1",
+        type: "line",
+        source: "cluster-1",
+        paint: { "line-color": "#1D4ED8", "line-width": 2.5 },
+      });
+      m.addLayer({
+        id: "fill-cluster-2",
+        type: "fill",
+        source: "cluster-2",
+        paint: { "fill-color": "#eab308", "fill-opacity": 1 },
+      });
+      m.addLayer({
+        id: "line-cluster-2",
+        type: "line",
+        source: "cluster-2",
+        paint: { "line-color": "#a16207", "line-width": 2.5 },
+      });
+      m.addLayer({
+        id: "fill-cluster-3",
+        type: "fill",
+        source: "cluster-3",
+        paint: { "fill-color": "#ef4444", "fill-opacity": 1 },
+      });
+      m.addLayer({
+        id: "line-cluster-3",
+        type: "line",
+        source: "cluster-3",
+        paint: { "line-color": "#991b1b", "line-width": 2.5 },
+      });
 
       startGlobeRotation();
       setMapReady(true);
@@ -113,7 +178,17 @@ export function MapProvider({ children }: { children: ReactNode }) {
 
   return (
     <MapCtx.Provider
-      value={{ mapRef, mapReady, globeMode, setGlobeMode, stopGlobeRotation, startGlobeRotation, currentBearing, heroScrolling, setHeroScrolling }}
+      value={{
+        mapRef,
+        mapReady,
+        globeMode,
+        setGlobeMode,
+        stopGlobeRotation,
+        startGlobeRotation,
+        currentBearing,
+        heroScrolling,
+        setHeroScrolling,
+      }}
     >
       {/*
        * Map container — opacity dikontrol LANGSUNG via CSS variable.
@@ -137,10 +212,10 @@ export function MapProvider({ children }: { children: ReactNode }) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "none",
-          // Gradasi nyambung dengan background LifeExpectancySection
-          // Gradasi berakhir di #f3fdfc — match dengan warna bawah LifeExpectancySection
-          background: "linear-gradient(160deg, #D4F5EE 0%, #e8faf6 35%, #effaf8 65%, #f3fdfc 100%)",
-          opacity: "var(--map-fade-opacity, 0)" as React.CSSProperties["opacity"],
+          // Background gelap luar angkasa
+          background: "rgb(2, 2, 10)",
+          opacity:
+            "var(--map-fade-opacity, 0)" as React.CSSProperties["opacity"],
         }}
       />
       {children}

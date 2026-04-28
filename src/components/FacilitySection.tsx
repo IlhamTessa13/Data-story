@@ -380,7 +380,7 @@ export default function FacilitySection() {
                 textAlign: "center",
               }}
             >
-              Distribusi Fasilitas per Kabupaten
+              Distribusi Fasilitas per Kabupaten/Kota Tahun 2024
             </div>
 
             {/* Legend */}

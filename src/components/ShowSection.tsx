@@ -122,7 +122,7 @@ export default function ShowSection() {
         alignItems: "center",
         justifyContent: "center",
         background:
-          "linear-gradient(160deg, #d4f5ef 0%, #e8f8f5 40%, #c9f0e8 100%)",
+          "linear-gradient(to bottom, #d4f5ef 0%, #e8f8f5 40%, #c9f0e8 100%)",
         overflow: "hidden",
         padding: "2rem",
       }}
