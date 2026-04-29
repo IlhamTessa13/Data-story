@@ -75,7 +75,7 @@ const FooterSection = () => {
 
       {/* Orang kiri — mhs4.png */}
       <img
-        src="/images/mhs4.png"
+        src="/images/mhsfooter.png"
         alt="Mahasiswa"
         style={{
           position: "absolute",
