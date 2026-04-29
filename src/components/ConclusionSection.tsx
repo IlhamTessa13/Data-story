@@ -228,10 +228,12 @@ const ConclusionSection: React.FC = () => {
               <p
                 style={{
                   position: "relative",
+                  fontFamily:"Plus Jakarta Sans",
                   zIndex: 1,
                   fontSize: "14px",
                   lineHeight: 1.85,
                   color: "#2d2d2d",
+                  fontWeight: 600,
                   textAlign: "center",
                   padding: "48px 50px",
                   margin: 0,
