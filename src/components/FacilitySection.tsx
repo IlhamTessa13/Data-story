@@ -1,5 +1,4 @@
-// FacilitySection.tsx
-// "Jumlah Fasilitas Per Kabupaten" section
+
 import { useEffect, useRef, useState } from "react";
 
 const kabData = [
@@ -51,7 +50,6 @@ export default function FacilitySection() {
         overflow: "hidden",
       }}
     >
-      {/* ── CSS Animations untuk Bunga Mengambang ── */}
       <style>
         {`
           @keyframes float-anim-flower {
@@ -65,7 +63,6 @@ export default function FacilitySection() {
         `}
       </style>
 
-      {/* ── Section label ── */}
       <div
         style={{
           ...reveal(0.05),
@@ -100,19 +97,17 @@ export default function FacilitySection() {
         </span>
       </div>
 
-      {/* ── Main grid: text left + chart right ── */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
             "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
-          gap: "clamp(2rem,5vw,5rem)" /* Sedikit memperlebar gap antar kolom */,
+          gap: "clamp(2rem,5vw,5rem)",
           alignItems: "start",
           position: "relative",
           zIndex: 2,
         }}
       >
-        {/* ── LEFT: headline + paragraphs ── */}
         <div>
           <div style={reveal(0.12)}>
             <h2
@@ -121,7 +116,7 @@ export default function FacilitySection() {
                 fontWeight: 800,
                 fontSize: "clamp(1.8rem, 3.6vw, 3rem)",
                 color: "#DB6058",
-                margin: "0 0 1.2rem" /* Menambah jarak bawah judul */,
+                margin: "0 0 1.2rem",
                 lineHeight: 1.15,
               }}
             >
@@ -140,7 +135,6 @@ export default function FacilitySection() {
             </h2>
           </div>
 
-          {/* ── PARAGRAF INTERPRETASI DATA ── */}
           <div style={reveal(0.18)}>
             <p
               style={{
@@ -235,18 +229,17 @@ export default function FacilitySection() {
             </p>
           </div>
 
-          {/* Box paragraph — berlatar Rectangle19.webp dengan Glassmorphism/Overlay */}
           <div
             style={{
               ...reveal(0.24),
               position: "relative",
-              borderRadius: 16 /* Sudut lebih membulat */,
+              borderRadius: 16,
               overflow: "hidden",
               boxShadow:
-                "0 8px 25px rgba(0,0,0,0.06)" /* Tambahan bayangan agar elegan */,
+                "0 8px 25px rgba(0,0,0,0.06)",
             }}
           >
-            {/* Rectangle19 sebagai background */}
+
             <img
               src="/images/Rectangle 19.webp"
               alt=""
@@ -262,15 +255,15 @@ export default function FacilitySection() {
                 zIndex: 0,
               }}
             />
-            {/* OVERLAY: Lapisan putih semi-transparan agar teks terbaca jelas */}
+
             <div
               style={{
                 position: "absolute",
                 inset: 0,
                 background:
-                  "rgba(255, 255, 255, 0.82)" /* Transparansi putih 82% */,
+                  "rgba(255, 255, 255, 0.82)",
                 backdropFilter:
-                  "blur(4px)" /* Efek blur ala Apple/Glassmorphism */,
+                  "blur(4px)" ,
                 zIndex: 1,
               }}
             />
@@ -278,13 +271,13 @@ export default function FacilitySection() {
             <p
               style={{
                 position: "relative",
-                zIndex: 2 /* Harus di atas overlay */,
+                zIndex: 2,
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                 fontSize: "clamp(0.82rem, 1.3vw, 0.95rem)",
                 color: "#1a3a32",
                 lineHeight: 1.85,
                 margin: 0,
-                padding: "18px 20px" /* Padding diperbesar sedikit */,
+                padding: "18px 20px" ,
                 textAlign: "justify",
               }}
             >
@@ -327,22 +320,20 @@ export default function FacilitySection() {
           </div>
         </div>
 
-        {/* ── RIGHT: bar chart card ── */}
         <div style={reveal(0.2)}>
-          {/* Chart card */}
           <div
             style={{
               background: "#C5EDEA",
-              borderRadius: 24 /* Sudut lebih membulat agar ramah visual */,
-              padding: "24px 24px 22px" /* Padding sedikit diperbesar */,
+              borderRadius: 24 ,
+              padding: "24px 24px 22px" ,
               border:
-                "2px solid rgba(255,255,255,0.8)" /* Border sedikit ditebalkan */,
+                "2px solid rgba(255,255,255,0.8)",
               boxShadow:
-                "0 12px 35px rgba(12, 39, 38, 0.08)" /* BAYANGAN ditambahkan di sini */,
+                "0 12px 35px rgba(12, 39, 38, 0.08)" ,
               position: "relative",
             }}
           >
-            {/* Bunga2 menempel di atas judul chart dengan Animasi */}
+
             <div
               style={{
                 display: "flex",
@@ -354,7 +345,7 @@ export default function FacilitySection() {
                 src="/images/bunga3.png"
                 alt=""
                 aria-hidden="true"
-                className="bunga-animasi" /* <-- Penambahan Class Animasi */
+                className="bunga-animasi" 
                 style={{
                   width: "clamp(100px, 11vw, 110px)",
                   height: "auto",
@@ -363,7 +354,7 @@ export default function FacilitySection() {
                   userSelect: "none",
                   display: "block",
                   filter:
-                    "drop-shadow(0 4px 6px rgba(0,0,0,0.1))" /* Sedikit bayangan pada bunga */,
+                    "drop-shadow(0 4px 6px rgba(0,0,0,0.1))" ,
                 }}
               />
             </div>
@@ -383,7 +374,6 @@ export default function FacilitySection() {
               Distribusi Fasilitas per Kabupaten/Kota Tahun 2024
             </div>
 
-            {/* Legend */}
             <div
               style={{
                 display: "flex",
@@ -416,7 +406,7 @@ export default function FacilitySection() {
                       width: 10,
                       height: 10,
                       borderRadius:
-                        "50%" /* Legend dibuat bulat, bukan kotak (lebih modern) */,
+                        "50%" ,
                       background: color,
                       flexShrink: 0,
                     }}
@@ -426,7 +416,6 @@ export default function FacilitySection() {
               ))}
             </div>
 
-            {/* Horizontal bars */}
             <div
               style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
             >
@@ -469,7 +458,7 @@ export default function FacilitySection() {
                   </div>
                   <div
                     style={{
-                      height: 12 /* Bar sedikit lebih tebal */,
+                      height: 12 ,
                       background: "rgba(0,0,0,0.06)",
                       borderRadius: 10,
                       overflow: "hidden",
@@ -481,7 +470,7 @@ export default function FacilitySection() {
                         width: visible ? `${(kab.faskes / MAX) * 100}%` : "0%",
                         background: barColor(kab.faskes),
                         borderRadius: 10,
-                        transition: `width 1s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.35 + i * 0.08}s` /* Animasi lebih bouncy */,
+                        transition: `width 1s cubic-bezier(0.34, 1.56, 0.64, 1) ${0.35 + i * 0.08}s`,
                       }}
                     />
                   </div>

@@ -1,8 +1,7 @@
-// src/components/FooterSection.tsx
+
 import { useEffect } from "react";
 
 const FooterSection = () => {
-  // Pastikan globe (--map-fade-opacity) tidak tembus ke footer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -29,14 +28,12 @@ const FooterSection = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        // Mulai dengan warna identik ShowSection, lalu drift ke nuansa footer
         background:
           "linear-gradient(to left, #d4f5ef 0%, #e8f8f5 40%, #c9f0e8 100%)",
         zIndex: 2,
         isolation: "isolate",
       }}
     >
-      {/* Gradient jembatan dari ShowSection — hilangkan garis batas */}
       <div
         style={{
           position: "absolute",
@@ -51,7 +48,6 @@ const FooterSection = () => {
         }}
       />
 
-      {/* Background image bgfooter.png — fade in dari tengah ke bawah */}
       <img
         src="/images/bgfooter.png"
         alt=""
@@ -66,20 +62,18 @@ const FooterSection = () => {
           pointerEvents: "none",
           zIndex: 0,
           opacity: 0.38,
-          // Mask: transparan di atas, solid di bawah — melebur dengan ShowSection
           maskImage: "linear-gradient(to bottom, transparent 0%, black 35%)",
           WebkitMaskImage:
             "linear-gradient(to bottom, transparent 0%, black 35%)",
         }}
       />
 
-      {/* Orang kiri — mhs4.png */}
       <img
         src="/images/mhsfooter.png"
         alt="Mahasiswa"
         style={{
           position: "absolute",
-          bottom: 56, // atas strip bawah
+          bottom: 56, 
           left: "clamp(0px, 2vw, 40px)",
           height: "clamp(320px, 72vh, 600px)",
           width: "auto",
@@ -90,7 +84,6 @@ const FooterSection = () => {
         }}
       />
 
-      {/* Orang kanan — mhs2.png */}
       <img
         src="/images/mhs2.png"
         alt="Mahasiswi"
@@ -107,7 +100,6 @@ const FooterSection = () => {
         }}
       />
 
-      {/* Konten tengah */}
       <div
         style={{
           position: "relative",
@@ -122,7 +114,6 @@ const FooterSection = () => {
           maxWidth: "100%",
         }}
       >
-        {/* Judul besar */}
         <h2
           style={{
             fontFamily: "'Bricolage Grotesque', sans-serif",
@@ -141,7 +132,6 @@ const FooterSection = () => {
           <em style={{ fontStyle: "italic" }}>yang Bisa Dibenahi.</em>
         </h2>
 
-        {/* Paragraf deskripsi */}
         <p
           style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -160,7 +150,6 @@ const FooterSection = () => {
         </p>
       </div>
 
-      {/* Strip bawah — logo & info */}
       <div
         style={{
           position: "absolute",
@@ -178,7 +167,6 @@ const FooterSection = () => {
           gap: "1rem",
         }}
       >
-        {/* Logo kiri — stis.webp */}
         <img
           src="/images/stis.webp"
           alt="Politeknik Statistika STIS"
@@ -190,7 +178,6 @@ const FooterSection = () => {
           }}
         />
 
-        {/* Logo — 3sd1.png */}
         <img
           src="/images/3sd1.png"
           alt="3SD1 Syndicate"
@@ -202,7 +189,6 @@ const FooterSection = () => {
           }}
         />
 
-        {/* Teks info */}
         <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <span
             style={{
@@ -226,10 +212,8 @@ const FooterSection = () => {
           </span>
         </div>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Sumber data kanan */}
         <div
           style={{
             display: "flex",

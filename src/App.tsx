@@ -35,18 +35,16 @@ function App() {
           position: "relative",
         }}
       >
-        {/* Navigation — sticky, mengambang di atas semua konten */}
         <NavSection />
 
-        {/* 1. Hero — naik ke belakang nav dengan margin negatif */}
         <section
           id="hero"
           style={{
             ...sectionBg,
-            marginTop: "-62px", // naik sebesar tinggi navbar
+            marginTop: "-62px",
           }}
         >
-          <HeroSection config={storyConfig} />
+          <HeroSection/>
         </section>
 
         {/* 2. Latar Belakang */}

@@ -1,4 +1,3 @@
-// src/components/ShowSection.tsx
 import { useState, useEffect } from "react";
 
 const members = [
@@ -11,39 +10,25 @@ const members = [
 
 const total = members.length;
 
-// Each MEMBER has a fixed rotation for life — never changes regardless of slot
-// This prevents any rotation jump when cards shift positions
 const MEMBER_ROTATION = [2, -5, 6, -3, 4];
 
-// Slot controls only Y offset, scale, and z-index
 const SLOT_Y = [0, 10, 16, 20, 24];
 const SLOT_SCALE = [1, 0.97, 0.94, 0.91, 0.88];
 const SLOT_Z = [50, 40, 30, 20, 10];
 
-// Physics easing: fast start, decelerate (card falling with gravity feel)
-const FALL_EASING = "cubic-bezier(0.55, 0, 1, 0.45)"; // accelerate down
-const RISE_EASING = "cubic-bezier(0, 0.55, 0.45, 1)"; // decelerate up (like lifting)
-
-// How many cards have been "spent" (moved off the front)
-// visibleCount = total - spent
-// spent=0 → all 5 cards in stack; spent=5 → stack empty
+const FALL_EASING = "cubic-bezier(0.55, 0, 1, 0.45)"; 
+const RISE_EASING = "cubic-bezier(0, 0.55, 0.45, 1)"; 
 
 type CardState = {
-  // Which visual slot this card currently occupies (0=front … total-1=back)
-  // null means it has been "fallen off" (spent) and lives below viewport
   slot: number | null;
-  // Animation override for this card
   phase: "idle" | "falling" | "snap-below" | "rising";
 };
 
 export default function ShowSection() {
-  // order[i] = memberIndex at position i from front (only unspent cards)
   const [order, setOrder] = useState<number[]>(members.map((_, i) => i));
-  // spent: array of memberIndices that have already fallen off, in order
   const [spent, setSpent] = useState<number[]>([]);
   const [animating, setAnimating] = useState(false);
 
-  // Per-card animation phase
   const [phases, setPhases] = useState<Record<number, CardState["phase"]>>(() =>
     Object.fromEntries(
       members.map((_, i) => [i, "idle" as CardState["phase"]]),
@@ -51,7 +36,6 @@ export default function ShowSection() {
   );
 
   const canGoNext = order.length > 0 && !animating;
-  // Can go prev only if there are spent cards
   const canGoPrev = spent.length > 0 && !animating;
 
   const goNext = () => {
@@ -59,14 +43,11 @@ export default function ShowSection() {
     setAnimating(true);
     const frontIdx = order[0];
 
-    // 1. Trigger fall animation on front card
     setPhases((p) => ({ ...p, [frontIdx]: "falling" }));
 
     setTimeout(() => {
-      // 2. Move card from active order → spent
       setOrder((o) => o.slice(1));
       setSpent((s) => [...s, frontIdx]);
-      // Snap below instantly (no transition)
       setPhases((p) => ({ ...p, [frontIdx]: "snap-below" }));
 
       setTimeout(() => {
@@ -78,19 +59,15 @@ export default function ShowSection() {
   const goPrev = () => {
     if (!canGoPrev) return;
     setAnimating(true);
-    // The last spent card comes back
     const returnIdx = spent[spent.length - 1];
 
-    // 1. Snap it BELOW viewport (no transition) — will rise up from bottom
     setPhases((p) => ({ ...p, [returnIdx]: "snap-below" }));
 
     setTimeout(() => {
-      // 2. Move it back to front of order
       setOrder((o) => [returnIdx, ...o]);
       setSpent((s) => s.slice(0, -1));
 
       setTimeout(() => {
-        // 3. Animate it rising into slot 0
         setPhases((p) => ({ ...p, [returnIdx]: "rising" }));
 
         setTimeout(() => {
@@ -111,7 +88,7 @@ export default function ShowSection() {
   }, [order, spent, animating]);
 
   const frontMember = order.length > 0 ? members[order[0]] : null;
-  const shownCount = order.length; // cards still in stack
+  const shownCount = order.length; 
 
   return (
     <section
@@ -127,7 +104,6 @@ export default function ShowSection() {
         padding: "2rem",
       }}
     >
-      {/* Bg blobs */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         <div
           style={{
@@ -155,7 +131,6 @@ export default function ShowSection() {
         />
       </div>
 
-      {/* Left nav */}
       <div
         style={{
           position: "absolute",
@@ -189,7 +164,6 @@ export default function ShowSection() {
           &#8679;
         </NavBtn>
 
-        {/* Progress dots */}
         <div
           style={{
             display: "flex",
@@ -226,7 +200,6 @@ export default function ShowSection() {
         </NavBtn>
       </div>
 
-      {/* Right info */}
       <div
         style={{
           position: "absolute",
@@ -308,7 +281,6 @@ export default function ShowSection() {
         </div>
       </div>
 
-      {/* Card stack — render ALL cards always so transitions work */}
       <div
         style={{
           position: "relative",
@@ -318,10 +290,9 @@ export default function ShowSection() {
       >
         {members.map((member, memberIdx) => {
           const phase = phases[memberIdx];
-          const slotIdx = order.indexOf(memberIdx); // -1 if spent
+          const slotIdx = order.indexOf(memberIdx); 
           const isInStack = slotIdx !== -1;
 
-          // Rotation is ALWAYS locked to the member — never changes
           const rot = MEMBER_ROTATION[memberIdx];
 
           const scale = isInStack ? SLOT_SCALE[slotIdx] : SLOT_SCALE[total - 1];
@@ -345,11 +316,9 @@ export default function ShowSection() {
             easing = RISE_EASING;
             transitionDuration = "0.52s";
           } else {
-            // idle
             if (isInStack) {
               ty = SLOT_Y[slotIdx];
             } else {
-              // spent card sits below, out of view
               ty = 800;
               useTransition = false;
             }
@@ -367,7 +336,6 @@ export default function ShowSection() {
                   ? `transform ${transitionDuration} ${easing}`
                   : "none",
                 willChange: "transform",
-                // Hide spent cards from pointer events
                 pointerEvents: isInStack && slotIdx === 0 ? "auto" : "none",
               }}
             >

@@ -1,7 +1,6 @@
-// src/components/ConclusionSection.tsx
+
 import React, { useEffect, useRef, useState } from "react";
 
-/** 5 belah ketupat outline saling overlapping — dekoratif */
 const DiamondBg: React.FC<{ style?: React.CSSProperties }> = ({ style }) => (
   <svg
     width="500"
@@ -43,8 +42,6 @@ const ConclusionSection: React.FC = () => {
      const rect = wrapperRef.current.getBoundingClientRect();
      const vh = window.innerHeight;
 
-     // ─── GUARD: hanya aktif jika section ini sudah mendekati viewport ───
-     // Jika section masih jauh di bawah, jangan sentuh --map-fade-opacity
      if (rect.top > vh * 1.2) {
        return;
      }
@@ -90,7 +87,6 @@ const ConclusionSection: React.FC = () => {
           opacity: overlayOpacity,
           willChange: "opacity",
           isolation: "isolate",
-          // Mask tepi atas agar fade masuk dari bawah tidak terpotong tajam
           WebkitMaskImage:
             "linear-gradient(to bottom, transparent 0%, black 30%)",
           maskImage: "linear-gradient(to bottom, transparent 0%, black 30%)",
@@ -112,7 +108,7 @@ const ConclusionSection: React.FC = () => {
             overflow: "hidden",
           }}
         >
-          {/* ── Diamond BG KIRI ── */}
+
           <DiamondBg
             style={{
               position: "absolute",
@@ -124,7 +120,6 @@ const ConclusionSection: React.FC = () => {
             }}
           />
 
-          {/* ── Diamond BG KANAN ── */}
           <DiamondBg
             style={{
               position: "absolute",
@@ -136,7 +131,6 @@ const ConclusionSection: React.FC = () => {
             }}
           />
 
-          {/* ── Label KESIMPULAN ── */}
           <div
             style={{
               position: "absolute",
@@ -170,7 +164,6 @@ const ConclusionSection: React.FC = () => {
             </span>
           </div>
 
-          {/* ── Main content ── */}
           <div
             style={{
               position: "relative",
@@ -184,7 +177,6 @@ const ConclusionSection: React.FC = () => {
           >
             <div style={{ width: "260px", flexShrink: 0 }} />
 
-            {/* ── Card teks ── */}
             <div
               style={{ position: "relative", width: "560px", flexShrink: 0 }}
             >
@@ -256,7 +248,6 @@ const ConclusionSection: React.FC = () => {
               </p>
             </div>
 
-            {/* ── Karakter mhs ── */}
             <div
               style={{
                 width: "260px",

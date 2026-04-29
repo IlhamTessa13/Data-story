@@ -85,10 +85,6 @@ const GLOBE_VIEW = {
   bearing: 0,
 };
 
-// ─────────────────────────────────────────
-// Tiny helpers
-// ─────────────────────────────────────────
-
 function injectPopupStyles() {
   if (document.getElementById("sulbar-popup-styles")) return;
   const s = document.createElement("style");
@@ -128,10 +124,6 @@ const NARRATIVE_IMAGES: Record<string, string> = {
   faskes: "/images/fasilitaskesehatan.png",
   clustering: "/images/kluster.png",
 };
-
-// ─────────────────────────────────────────
-// UI Sub-components
-// ─────────────────────────────────────────
 
 function NarrativeBox({
   step,
@@ -285,10 +277,6 @@ function ZoomOutOverlay({ visible }: { visible: boolean }) {
   );
 }
 
-// ─────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────
-
 export default function ScrollySection() {
   const {
     mapRef,
@@ -306,31 +294,21 @@ export default function ScrollySection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Section slow-rotation RAF
   const sectionRotateRef = useRef<number | null>(null);
   const rotBearing = useRef(0);
 
-  // FlyTo debounce
   const flyDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Popups
   const popupHighRef = useRef<mapboxgl.Popup | null>(null);
   const popupLowRef = useRef<mapboxgl.Popup | null>(null);
 
-  // Scroll speed
   const ticking = useRef(false);
   const lastScrollY = useRef(window.scrollY);
   const lastScrollTime = useRef(Date.now());
   const scrollSpeed = useRef(0);
 
-  /**
-   * mapStep = the step index the map is currently targeting.
-   * -1 means globe view.
-   * This is the ONLY state that drives navigation — no booleans, no phases.
-   */
   const mapStep = useRef(-1);
 
-  // React render state
   const [activeStep, setActiveStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [visible, setVisible] = useState(false);
@@ -338,7 +316,6 @@ export default function ScrollySection() {
   const [imageScrollProgress, setImageScrollProgress] = useState(0);
   const [showZoomOutOverlay, setShowZoomOutOverlay] = useState(false);
 
-  // ── scroll speed tracking ──────────────────────────────
   const updateScrollSpeed = useCallback(() => {
     const now = Date.now();
     const dt = now - lastScrollTime.current;
@@ -357,7 +334,6 @@ export default function ScrollySection() {
     return base;
   }, []);
 
-  // ── section rotation ───────────────────────────────────
   const stopSectionRotation = useCallback(() => {
     if (sectionRotateRef.current) {
       cancelAnimationFrame(sectionRotateRef.current);
@@ -380,7 +356,6 @@ export default function ScrollySection() {
     [mapRef, stopSectionRotation],
   );
 
-  // ── popups & highlights ────────────────────────────────
   const removeAllPopups = useCallback(() => {
     popupHighRef.current?.remove();
     popupHighRef.current = null;
@@ -477,12 +452,6 @@ export default function ScrollySection() {
     [mapRef, clearHighlight, removeAllPopups],
   );
 
-  // ── core flyTo ─────────────────────────────────────────
-  /**
-   * Always interrupts current animation and flies to new target.
-   * 16 ms debounce collapses burst scroll events into one call per frame.
-   * onEnd fires only if this flyTo wasn't superseded.
-   */
   const doFlyTo = useCallback(
     (
       target: {
@@ -496,18 +465,17 @@ export default function ScrollySection() {
     ) => {
       if (!mapRef.current) return;
 
-      // Immediately stop — this makes the map "ready" for a new instruction
       mapRef.current.stop();
       stopSectionRotation();
 
       if (flyDebounceRef.current) clearTimeout(flyDebounceRef.current);
 
       const duration = getFlyDuration(baseDuration);
-      const token = target; // identity check for onEnd guard
+      const token = target; 
 
       flyDebounceRef.current = setTimeout(() => {
         if (!mapRef.current) return;
-        mapRef.current.stop(); // stop again in case something else started
+        mapRef.current.stop(); 
 
         mapRef.current.flyTo({
           center: token.center,
@@ -528,18 +496,10 @@ export default function ScrollySection() {
     [mapRef, stopSectionRotation, getFlyDuration],
   );
 
-  // ── navigate ───────────────────────────────────────────
-  /**
-   * Single navigation entry point.
-   * targetStep: -1 = globe, 0-3 = data step
-   *
-   * Works identically for forward AND backward scroll.
-   * No phase checks, no booleans to get out of sync.
-   */
   const navigateTo = useCallback(
     (targetStep: number) => {
       if (!mapRef.current || !mapReady) return;
-      if (targetStep === mapStep.current) return; // already targeting this
+      if (targetStep === mapStep.current) return; 
 
       const prev = mapStep.current;
       mapStep.current = targetStep;
@@ -547,7 +507,6 @@ export default function ScrollySection() {
       setDirection(targetStep > prev ? 1 : -1);
 
       if (targetStep === -1) {
-        // ── Back to globe ──
         stopGlobeRotation();
         clearHighlight();
         removeAllPopups();
@@ -563,13 +522,11 @@ export default function ScrollySection() {
           },
         );
       } else {
-        // ── Data step ──
         const step = STEPS[targetStep];
         stopGlobeRotation();
         setGlobeMode(false);
         setUiVisible(true);
 
-        // Longer duration only for the very first zoom-in from globe
         const baseDur = prev === -1 ? 3800 : 2000;
 
         doFlyTo(step.flyTo, baseDur, () => {
@@ -594,7 +551,6 @@ export default function ScrollySection() {
     ],
   );
 
-  // ── GeoJSON fetch ──────────────────────────────────────
   useEffect(() => {
     injectPopupStyles();
     fetch("/data/sulbar-kabupaten.geojson")
@@ -606,7 +562,6 @@ export default function ScrollySection() {
       .catch(console.error);
   }, []);
 
-  // ── Main scroll driver ─────────────────────────────────
   useEffect(() => {
     const run = () => {
       updateScrollSpeed();
@@ -617,7 +572,6 @@ export default function ScrollySection() {
       const inView = rect.top < vh * 0.7 && rect.bottom > vh * 0.3;
       setVisible(inView);
 
-      // ── Above the section → globe ──────────────────────
       if (rect.top > vh * 0.35) {
         if (mapStep.current !== -1) {
           setImageScrollProgress(0);
@@ -630,18 +584,15 @@ export default function ScrollySection() {
       if (!inView || !mapReady || !geojsonReady.current || heroScrolling)
         return;
 
-      // ── Compute progress inside the section ────────────
       const scrolled = Math.max(0, -rect.top);
       const totalH = sectionRef.current.offsetHeight - vh;
       const rawProgress = totalH > 0 ? scrolled / totalH : 0;
 
-      // ── Tail zone (past all steps) ─────────────────────
       if (rawProgress >= 1) {
         const lastIdx = STEPS.length - 1;
         if (activeStep !== lastIdx) setActiveStep(lastIdx);
         setImageScrollProgress(1);
 
-        // If we haven't gone to globe yet after the last step, do it now
         if (mapStep.current === lastIdx) {
           setShowZoomOutOverlay(true);
           setTimeout(() => setShowZoomOutOverlay(false), 1200);
@@ -650,14 +601,12 @@ export default function ScrollySection() {
         return;
       }
 
-      // ── Inside steps zone ──────────────────────────────
       const clampedP = Math.min(0.9999, rawProgress);
       const targetIdx = Math.min(
         STEPS.length - 1,
         Math.floor(clampedP * STEPS.length),
       );
 
-      // Per-step parallax progress
       const perStep = 1 / STEPS.length;
       const localP = (clampedP % perStep) / perStep;
       setImageScrollProgress(Math.min(1, localP));
@@ -667,8 +616,6 @@ export default function ScrollySection() {
         setImageScrollProgress(0);
       }
 
-      // This is the key: call navigateTo unconditionally based on scroll position.
-      // navigateTo guards against same-step calls, so it's safe.
       navigateTo(targetIdx);
     };
 
@@ -682,18 +629,16 @@ export default function ScrollySection() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    run(); // initial run
+    run(); 
     return () => window.removeEventListener("scroll", onScroll);
   }, [activeStep, mapReady, heroScrolling, updateScrollSpeed, navigateTo]);
 
-  // ── Sync map opacity ───────────────────────────────────
   useEffect(() => {
     if (visible && !globeMode) {
       document.documentElement.style.setProperty("--map-fade-opacity", "1");
     }
   }, [visible, globeMode]);
 
-  // ── Cleanup ────────────────────────────────────────────
   useEffect(
     () => () => {
       removeAllPopups();
@@ -702,7 +647,6 @@ export default function ScrollySection() {
     [removeAllPopups, stopSectionRotation],
   );
 
-  // ── Render ─────────────────────────────────────────────
   return (
     <>
       <ScrollHint visible={visible && globeMode && !heroScrolling} />

@@ -1,4 +1,3 @@
-// QuotesSection
 import { useEffect, useRef, useState } from "react";
 
 export default function QuotesSection() {
@@ -28,7 +27,6 @@ export default function QuotesSection() {
         background: "transparent",
       }}
     >
-      {/* ── Gambar Nakes — di BELAKANG ornamen kiri (zIndex: 0 < ornamen zIndex: 1) ── */}
       <div
         style={{
           position: "absolute",
@@ -37,7 +35,7 @@ export default function QuotesSection() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          zIndex: 0 /* di bawah ornamen9 yang zIndex:1 */,
+          zIndex: 0,
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(16px)",
           transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s",
@@ -56,7 +54,6 @@ export default function QuotesSection() {
         />
       </div>
 
-      {/* ── ornamen9 — KIRI, zIndex:1 supaya nakes di belakangnya ── */}
       <img
         src="/images/ornamen9.png"
         alt=""
@@ -66,19 +63,16 @@ export default function QuotesSection() {
           position: "absolute",
           top: "20%",
           left: "0px",
-          /* geser ke atas sedikit supaya visually lebih center
-             (ornamen biasanya berat ke bawah karena bentuk organik) */
           transform: "translateY(-58%)",
-          width: "clamp(150px, 20vw, 250px)" /* diperkecil dari 18vw → 14vw */,
-          maxHeight: "100%" /* kurangi dari 100% supaya tidak melar */,
+          width: "clamp(150px, 20vw, 250px)",
+          maxHeight: "100%",
           objectFit: "contain",
           objectPosition: "left center",
           pointerEvents: "none",
-          zIndex: 1 /* di atas nakes */,
+          zIndex: 1,
         }}
       />
 
-      {/* ── ornamen8 — KANAN, diperkecil & lebih center ── */}
       <img
         src="/images/ornamen8.png"
         alt=""
@@ -89,7 +83,7 @@ export default function QuotesSection() {
           top: "21%",
           right: "0px",
           transform: "translateY(-58%)",
-          width: "clamp(100px, 17vw, 210px)" /* diperkecil dari 18vw → 14vw */,
+          width: "clamp(100px, 17vw, 210px)",
           maxHeight: "85%",
           objectFit: "contain",
           objectPosition: "right center",
@@ -98,7 +92,6 @@ export default function QuotesSection() {
         }}
       />
 
-      {/* ── Bunga center atas ── */}
       <img
         src="/images/bunga4.png"
         alt=""
@@ -115,7 +108,6 @@ export default function QuotesSection() {
         }}
       />
 
-      {/* ── Quote ── */}
       <div
         style={{
           position: "relative",

@@ -72,14 +72,13 @@ export function MapProvider({ children }: { children: ReactNode }) {
     mapRef.current.on("load", () => {
       const m = mapRef.current!;
 
-      // Fog warna disesuaikan dengan palet #effaf8 / #eef9f6
-      // agar globe blend seamless dengan background LifeExpectancySection
+     
       m.setFog({
-        color: "rgb(8, 8, 24)", // gelap navy — horizon
-        "high-color": "rgb(4, 4, 16)", // sangat gelap — upper atmosphere
+        color: "rgb(8, 8, 24)", 
+        "high-color": "rgb(4, 4, 16)", 
         "horizon-blend": 0.06,
-        "space-color": "rgb(2, 2, 10)", // hampir hitam — luar angkasa
-        "star-intensity": 0.6, // bintang terlihat
+        "space-color": "rgb(2, 2, 10)", 
+        "star-intensity": 0.6, 
       });
 
       m.addSource("highlight-red", {
@@ -190,19 +189,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
         setHeroScrolling,
       }}
     >
-      {/*
-       * Map container — opacity dikontrol LANGSUNG via CSS variable.
-       *
-       * TIDAK ada `transition` di sini karena LifeExpectancySection
-       * sudah menghitung nilai opacity secara per-frame di scroll handler
-       * (smooth via easing function). Menambahkan CSS transition di sini
-       * akan double-ease dan membuat animasi terasa lambat/lag.
-       *
-       * Default opacity: 0 — LifeExpectancySection yang akan men-set
-       * --map-fade-opacity ke nilai yang benar sesuai posisi scroll.
-       * ScrollySection juga bisa override variable ini untuk fade-out
-       * di tail zone-nya.
-       */}
+
       <div
         ref={containerRef}
         style={{

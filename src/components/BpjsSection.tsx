@@ -1,5 +1,4 @@
-// BpjsSection — 3 kolom: Kiri(teks+legend) | Tengah(pie chart) | Kanan(logo)
-// mhs1 dipindah ke pojok kanan bawah secara absolut, ukuran lebih besar
+
 import { useEffect, useRef, useState } from "react";
 
 const PIE_DATA = [
@@ -210,7 +209,6 @@ export default function BpjsSection() {
         justifyContent: "center",
       }}
     >
-      {/* Gold wave bottom */}
       <img
         src="/images/vector13.png"
         alt=""
@@ -226,7 +224,6 @@ export default function BpjsSection() {
         }}
       />
 
-      {/* mhs1 — pojok kanan bawah, absolut, lebih besar */}
       <div
         style={{
           ...reveal(0.04),
@@ -250,7 +247,6 @@ export default function BpjsSection() {
         />
       </div>
 
-      {/* 2-column grid (kiri + tengah), kolom kanan hanya logo BPJS */}
       <div
         style={{
           position: "relative",
@@ -262,7 +258,6 @@ export default function BpjsSection() {
           alignItems: "center",
         }}
       >
-        {/* ══ KIRI: Teks + Legend ══ */}
         <div
           style={{
             display: "flex",
@@ -442,7 +437,6 @@ export default function BpjsSection() {
           </div>
         </div>
 
-        {/* ══ TENGAH: Pie Chart ══ */}
         <div
           style={{
             ...reveal(0.2),
@@ -473,7 +467,6 @@ export default function BpjsSection() {
           </div>
         </div>
 
-        {/* ══ KANAN: Logo BPJS saja (mhs1 sudah absolut) ══ */}
         <div
           style={{
             display: "flex",
@@ -485,7 +478,6 @@ export default function BpjsSection() {
             height: "100%",
           }}
         >
-          {/* BPJS logo bubble */}
           <div
             style={{
               ...reveal(0.08),

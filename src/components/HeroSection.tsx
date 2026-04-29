@@ -1,7 +1,3 @@
-// HeroSection.tsx
-// Font imports needed in your index.html or global CSS:
-// <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Lora:ital,wght@0,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -31,7 +27,6 @@ export default function HeroSection() {
         flexDirection: "column",
       }}
     >
-      {/* ── ornamen2: soft yellow-peach blob, top-right corner ── */}
       <img
         src="/images/ornamen2.webp"
         alt=""
@@ -48,7 +43,6 @@ export default function HeroSection() {
         }}
       />
 
-      {/* ── People illustration ── */}
       <img
         src="/images/people.webp"
         alt="Ilustrasi berbagai generasi"
@@ -69,7 +63,6 @@ export default function HeroSection() {
         }}
       />
 
-      {/* ── ornamen1 ── */}
       <img
         src="/images/ornamen1.webp"
         alt=""
@@ -86,7 +79,6 @@ export default function HeroSection() {
         }}
       />
 
-      {/* ── Left content column ── */}
       <div
         style={{
           position: "relative",
@@ -102,7 +94,7 @@ export default function HeroSection() {
           maxWidth: 760,
         }}
       >
-        {/* ── Title ── */}
+
         <motion.h1 {...fade(0.2, 28)} style={{ margin: 0, lineHeight: 1.05 }}>
           <span
             style={{
@@ -133,17 +125,14 @@ export default function HeroSection() {
           </span>
         </motion.h1>
 
-        {/* ── Description with ornamen3 + ornamen4 overlapping ── */}
         <motion.div
           {...fade(0.42)}
           style={{
             position: "relative",
             marginTop: "2rem",
-            // maxWidth diperlebar agar teks jadi ~4 baris
             maxWidth: 600,
           }}
         >
-          {/* ornamen3: warm blob — layer paling bawah, sisi kiri */}
           <img
             src="/images/ornamen3.webp"
             alt=""
@@ -161,7 +150,6 @@ export default function HeroSection() {
             }}
           />
 
-          {/* ornamen4: yellow rectangle — menutup seluruh area teks */}
           <img
             src="/images/ornamen4.webp"
             alt=""
@@ -185,7 +173,6 @@ export default function HeroSection() {
               position: "relative",
               zIndex: 2,
               fontFamily: "'Plus Jakarta Sans",
-              // Perbesar sedikit font agar teks mengisi ~4 baris
               fontSize: "clamp(0.9rem, 1.45vw, 1.05rem)",
               fontWeight: 600,
               color: "#1a1a1a",
@@ -217,7 +204,6 @@ export default function HeroSection() {
           </p>
         </motion.div>
 
-        {/* ── Stat boxes ── */}
         <motion.div
           {...fade(0.62)}
           className="hero-stat-boxes"
@@ -228,7 +214,6 @@ export default function HeroSection() {
             flexWrap: "nowrap",
             alignItems: "stretch",
             maxWidth: "100%",
-            // Tambah padding atas agar box tidak terpotong di atas
             paddingTop: "4px",
             marginLeft: "-50px",
           }}
@@ -257,9 +242,6 @@ export default function HeroSection() {
   );
 }
 
-/* ─────────────────────────────────── */
-/* Stat Box component                  */
-/* ─────────────────────────────────── */
 interface StatBoxProps {
   bgSrc: string;
   label: string;
@@ -275,16 +257,15 @@ function StatBox({ bgSrc, label, value, valueColor }: StatBoxProps) {
         flex: "1 1 0",
         minWidth: 130,
         borderRadius: 12,
-        overflow: "visible", // ← visible agar atas tidak terpotong
+        overflow: "visible", 
         padding: "25px 16px 16px",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center", // ← tengah horizontal
+        alignItems: "center", 
         gap: 1,
         top: "-20px",
       }}
     >
-      {/* Background — clip sendiri agar border-radius tetap rapi */}
       <div
         style={{
           position: "absolute",
@@ -307,7 +288,6 @@ function StatBox({ bgSrc, label, value, valueColor }: StatBoxProps) {
         />
       </div>
 
-      {/* Label — center, bold, nowrap */}
       <span
         style={{
           position: "relative",
@@ -326,7 +306,6 @@ function StatBox({ bgSrc, label, value, valueColor }: StatBoxProps) {
         {label}
       </span>
 
-      {/* Value + unit — center, nowrap */}
       <div
         style={{
           position: "relative",
@@ -354,7 +333,7 @@ function StatBox({ bgSrc, label, value, valueColor }: StatBoxProps) {
         <span
           style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontWeight: 800, // ← bold
+            fontWeight: 800, 
             fontSize: 10,
             color: "#445",
             letterSpacing: "0.06em",

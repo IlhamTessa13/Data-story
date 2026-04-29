@@ -39,7 +39,6 @@ export const trendData: TrendData[] = [
   { year: 2023, value: 86.7, region: "Nasional" },
 ];
 
-// ── DATA CHART BPJS ───────────────────────────────────────────
 export interface ChartPoint {
   year: number;
   sulbar: number;
@@ -54,7 +53,6 @@ export const bpjsChartData: ChartPoint[] = [
   { year: 2023, sulbar: 83.1, nasional: 86.7 },
 ];
 
-// Alias untuk kompatibilitas HeroSection
 export const stuntingChartData = bpjsChartData.map((d) => ({
   year: d.year,
   ntt: d.sulbar,

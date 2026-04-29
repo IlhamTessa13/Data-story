@@ -50,7 +50,6 @@ export default function MedicalSection() {
         overflow: "hidden",
       }}
     >
-      {/* ornamen11 — kanan */}
       <img
         src="/images/ornamen11.png"
         alt=""
@@ -67,7 +66,6 @@ export default function MedicalSection() {
         }}
       />
 
-      {/* Section label */}
       <div
         style={{
           ...reveal(0.05),
@@ -102,7 +100,6 @@ export default function MedicalSection() {
         </span>
       </div>
 
-      {/* Grid */}
       <div
         style={{
           display: "grid",
@@ -114,7 +111,6 @@ export default function MedicalSection() {
           zIndex: 2,
         }}
       >
-        {/* ===== KIRI — Bar Chart Card ===== */}
         <div
           style={{ ...reveal(0.1), display: "flex", flexDirection: "column" }}
         >
@@ -153,7 +149,6 @@ export default function MedicalSection() {
                 minHeight: 260,
               }}
             >
-              {/* Y-axis */}
               <div
                 style={{
                   display: "flex",
@@ -182,7 +177,6 @@ export default function MedicalSection() {
                 ))}
               </div>
 
-              {/* Bars area */}
               <div
                 style={{
                   flex: 1,
@@ -192,7 +186,6 @@ export default function MedicalSection() {
                 }}
               >
                 <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
-                  {/* Grid lines */}
                   {yTicks.map((tick) => (
                     <div
                       key={tick}
@@ -208,7 +201,6 @@ export default function MedicalSection() {
                     />
                   ))}
 
-                  {/* Bars */}
                   <div
                     style={{
                       position: "absolute",
@@ -262,7 +254,6 @@ export default function MedicalSection() {
                   </div>
                 </div>
 
-                {/* X labels */}
                 <div
                   style={{
                     display: "flex",
@@ -298,7 +289,6 @@ export default function MedicalSection() {
           </div>
         </div>
 
-        {/* ===== KANAN — Center, gambar di belakang angka ===== */}
         <div
           style={{
             ...reveal(0.12),
@@ -310,7 +300,6 @@ export default function MedicalSection() {
             zIndex: 2,
           }}
         >
-          {/* Wrapper: gambar + angka overlap */}
           <div
             style={{
               position: "relative",
@@ -320,7 +309,7 @@ export default function MedicalSection() {
               width: "100%",
             }}
           >
-            {/* nakes2.png — di atas, zIndex 1 */}
+
             <img
               src="/images/nakes2.png"
               alt="Tenaga Kesehatan"
@@ -336,7 +325,6 @@ export default function MedicalSection() {
               }}
             />
 
-            {/* Angka — overlap ke gambar, zIndex 2 */}
             <div
               style={{
                 fontFamily: "'Bricolage Grotesque', sans-serif",
@@ -356,7 +344,6 @@ export default function MedicalSection() {
             </div>
           </div>
 
-          {/* Subtitle */}
           <div
             style={{
               fontFamily: "'Lora', serif",
@@ -373,7 +360,6 @@ export default function MedicalSection() {
             Sulbar
           </div>
 
-          {/* Narrative */}
           <p
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -391,7 +377,6 @@ export default function MedicalSection() {
           </p>
         </div>
       </div>
-      {/* Gradient fade ke bawah — nyambung ke LifeExpectancy */}
       <div
         style={{
           position: "absolute",

@@ -1,4 +1,3 @@
-// LifeExpectancySection.tsx — crossfade seamless ke globe
 import { useEffect, useRef, useState } from "react";
 
 const ahhData = [
@@ -30,7 +29,6 @@ function buildPath(data: number[], minV: number, maxV: number) {
     .join(" ");
 }
 
-// Cubic ease-in-out
 function easeInOut(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -41,10 +39,8 @@ export default function LifeExpectancySection() {
 
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(0);
-  // Satu nilai opacity yang mengontrol SELURUH overlay (bg + konten)
   const [overlayOpacity, setOverlayOpacity] = useState(1);
 
-  // Chart visibility
   useEffect(() => {
     const obs = new IntersectionObserver(
       ([e]) => setVisible(e.isIntersecting),
@@ -54,7 +50,6 @@ export default function LifeExpectancySection() {
     return () => obs.disconnect();
   }, []);
 
-  // Chart draw animation
   useEffect(() => {
     if (!visible) {
       const t = setTimeout(() => setProgress(0), 400);
@@ -73,7 +68,6 @@ export default function LifeExpectancySection() {
     return () => cancelAnimationFrame(raf);
   }, [visible]);
 
-  // Scroll-driven crossfade
   useEffect(() => {
     document.documentElement.style.setProperty("--map-fade-opacity", "0");
 
@@ -85,11 +79,8 @@ export default function LifeExpectancySection() {
       const vh = window.innerHeight;
       const scrolled = -wRect.top;
 
-      // ─── GUARD: hanya aktif jika section ini yang sedang di-scroll ───
-      // Jika sudah melewati section ini sepenuhnya, jangan override
       const wrapperBottom = wRect.bottom;
       if (wrapperBottom < 0) {
-        // Section sudah jauh di atas — biarkan section lain yang control
         return;
       }
 
@@ -142,17 +133,6 @@ export default function LifeExpectancySection() {
 
   return (
     <div ref={wrapperRef} style={{ position: "relative", zIndex: 2 }}>
-      {/*
-       * SINGLE OVERLAY — background + konten jadi SATU layer.
-       * Fade keluar dengan opacity tunggal = tidak ada garis batas
-       * antara background dan konten.
-       *
-       * Globe di belakang (zIndex: 0) crossfade masuk bersamaan
-       * via --map-fade-opacity CSS variable.
-       *
-       * willChange: "opacity" → browser buat composite layer terpisah
-       * sehingga tidak ada repaint artifact / pixel seam saat opacity berubah.
-       */}
       <div
         style={{
           position: "sticky",
@@ -162,13 +142,11 @@ export default function LifeExpectancySection() {
           willChange: "opacity",
           isolation: "isolate",
           zIndex: 1,
-          // Tambahkan mask agar tepi bawah tidak terpotong tajam
           WebkitMaskImage:
             "linear-gradient(to bottom, black 60%, transparent 100%)",
           maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
         }}
       >
-        {/* Background */}
         <div
           style={{
             position: "absolute",
@@ -192,7 +170,6 @@ export default function LifeExpectancySection() {
             opacity: 1,
           }}
         />
-        {/* Content */}
         <section
           ref={sectionRef}
           style={{
@@ -206,7 +183,6 @@ export default function LifeExpectancySection() {
           }}
         >
           <div style={{ position: "relative", zIndex: 1 }}>
-            {/* Section label */}
             <div
               style={{
                 ...reveal(0.05),
@@ -239,7 +215,6 @@ export default function LifeExpectancySection() {
               </span>
             </div>
 
-            {/* 2-col grid */}
             <div
               style={{
                 display: "grid",
@@ -249,7 +224,6 @@ export default function LifeExpectancySection() {
                 alignItems: "center",
               }}
             >
-              {/* LEFT */}
               <div
                 style={{
                   display: "flex",
@@ -350,7 +324,6 @@ export default function LifeExpectancySection() {
                     marginTop: "0.4rem",
                   }}
                 >
-                  {/* Card Perempuan */}
                   <div
                     style={{
                       background: "#FFD6D3",
@@ -412,7 +385,6 @@ export default function LifeExpectancySection() {
                       </div>
                     </div>
                   </div>
-                  {/* Card Laki-laki */}
                   <div
                     style={{
                       background: "#C9E9FF",
@@ -477,7 +449,6 @@ export default function LifeExpectancySection() {
                 </div>
               </div>
 
-              {/* RIGHT — Chart */}
               <div
                 style={{
                   ...reveal(0.15),
@@ -662,7 +633,6 @@ export default function LifeExpectancySection() {
             </div>
           </div>
         </section>
-        {/* Strip bawah — warna #effaf8 solid di tepi paling bawah section */}
         // Strip bawah — ganti #effaf8 → #f4fefd
         <div
           style={{
@@ -677,12 +647,6 @@ export default function LifeExpectancySection() {
         />
       </div>
 
-      {/*
-       * TAIL ZONE — 220vh ruang scroll setelah fade selesai.
-       * Transparan — globe (zIndex:0) terlihat dari bawah.
-       * Warna globe background di MapContext sudah disetel ke #f3fdfc
-       * sehingga match saat crossfade selesai.
-       */}
       <div style={{ height: "220vh" }} />
     </div>
   );

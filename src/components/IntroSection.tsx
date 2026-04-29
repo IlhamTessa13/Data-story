@@ -1,4 +1,3 @@
-// IntroSection.tsx
 import { useEffect, useRef, useState } from "react";
 
 export default function IntroSection() {
@@ -37,7 +36,6 @@ export default function IntroSection() {
         flexDirection: "column",
       }}
     >
-      {/* ══ ornamen5: daun kiri bawah ══ */}
       <img
         src="/images/ornamen5.png"
         alt=""
@@ -53,7 +51,6 @@ export default function IntroSection() {
         }}
       />
 
-      {/* ══ ornamen6: bunga kanan bawah ══ */}
       <img
         src="/images/ornamen6.png"
         alt=""
@@ -69,7 +66,6 @@ export default function IntroSection() {
         }}
       />
 
-      {/* ══ ornamen10: kanan box deskripsi ══ */}
       <img
         src="/images/ornamen10.png"
         alt=""
@@ -85,7 +81,6 @@ export default function IntroSection() {
         }}
       />
 
-      {/* ══ SECTION LABEL ══ */}
       <div
         style={{
           ...reveal(0.05),
@@ -120,7 +115,6 @@ export default function IntroSection() {
         </span>
       </div>
 
-      {/* ══ MAIN GRID ══ */}
       <div
         className="intro-grid"
         style={{
@@ -133,9 +127,7 @@ export default function IntroSection() {
           flex: 1,
         }}
       >
-        {/* ════════ LEFT COLUMN ════════ */}
         <div style={{ position: "relative", minHeight: "500px" }}>
-          {/* ── ornamen7: tangan — paling belakang ── */}
           <img
             src="/images/ornamen7.png"
             alt=""
@@ -152,7 +144,6 @@ export default function IntroSection() {
             }}
           />
 
-          {/* ── Headline + ornamen4 bg ── */}
           <div
             style={{
               ...reveal(0.1),
@@ -210,7 +201,6 @@ export default function IntroSection() {
             </h2>
           </div>
 
-          {/* ── onamen8: absolute, bawah-tengah kolom kiri ── */}
           <div
             style={{
               ...reveal(0.3),
@@ -232,9 +222,7 @@ export default function IntroSection() {
             />
           </div>
         </div>
-        {/* ════════ RIGHT COLUMN ════════ */}
         <div style={{ position: "relative" }}>
-          {/* bunga6 — tengah atas kotak */}
           <img
             src="/images/bunga6.png"
             alt=""
@@ -251,7 +239,6 @@ export default function IntroSection() {
             }}
           />
 
-          {/* Deskripsi box */}
           <div
             style={{
               ...reveal(0.18),
