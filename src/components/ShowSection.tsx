@@ -270,16 +270,6 @@ export default function ShowSection() {
               <div
                 style={{
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 800,
-                  fontSize: "clamp(0.9rem, 1.6vw, 1.1rem)",
-                  color: "#0C2726",
-                }}
-              >
-                {frontMember.name}
-              </div>
-              <div
-                style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                   fontSize: "0.75rem",
                   color: "#1d9e75",
                   letterSpacing: "0.15em",
